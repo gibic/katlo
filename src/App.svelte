@@ -7,21 +7,102 @@
 
   let showOverlay:boolean;
 
+  const word = 'robin'
+
+  const guessRows:string[][] = [
+        ['', '', '', '', ''],
+        ['', '', '', '', ''],
+        ['', '', '', '', ''],
+        ['', '', '', '', ''],
+        ['', '', '', '', ''],
+        ['', '', '', '', '']
+  ]
+
+  let n = 0
+  let row = 0
+  const maxLetter = 5
+  const maxRow = 6
+
+  const handdleArray = (e) => {
+    if(e.detail.toLowerCase() == 'enter') {
+      submitAnswer() 
+      return
+    }
+    updateArray(e.detail)
+  }
+
+  const delKey = () => {
+    if (n < 1) return
+    n--
+    guessRows[row][n] = ''
+  }
+
+  const handdlekeyDown = (e) => {
+    const letter = e.detail
+      if(letter.match(/^[a-z]$/)) {
+        updateArray(letter)
+        return
+      }
+      if(letter == 'Backspace' || letter == 'Delete') {
+        delKey() 
+        return
+      }
+      if(letter === 'Enter') {
+        submitAnswer() 
+        return
+      }
+  }
+
+  const submitAnswer = () => {
+    if(guessRows[row].includes('')) {
+      console.log('kureng')
+      return
+    }
+    const guess = guessRows[row].join('').toLowerCase()
+    checkAnswer(guess)
+  }
+
+  const checkAnswer = (guess:string) => {
+    if(word.toLowerCase() === guess) console.log('bener')
+    else nextRow()
+  }
+
+  const updateArray = (e) => {
+    let max = n
+    max++
+
+    let lastLetter = guessRows[row][maxLetter]
+
+    if(max > maxLetter && lastLetter !== '') return
+
+      guessRows[row][n] = e
+      n++
+  }
+
+  const nextRow = () => {
+    let maximumAttempt = maxRow - 2
+    if(row > maximumAttempt) return
+    row = row + 1
+    n = 0
+  }
+
+
 	settings.set(
 		(JSON.parse(localStorage.getItem("settings")) as Settings) || createDefaultSettings()
 	);
 	settings.subscribe((s) => localStorage.setItem("settings", JSON.stringify(s)));
 </script>
 
+
 <Header on:click={() => showOverlay = true} />
 
 <main id="game">
   <section class="message-container"></section>
   <section class="game-container">
-    <Board />
+    <Board data={guessRows} />
   </section>
   <section class="game-keyboard">
-    <Keys />
+    <Keys on:keyPressed={handdleArray} on:keyDown={handdlekeyDown} on:delKey={delKey} />
   </section>
 </main>
 
@@ -101,12 +182,14 @@
 :global(:root, .dark) {
     --color-background: var(--color-tone-7);
 }
-
+:global(#app) {
+  height: 100vh;
+}
 #game {
   width: 100%;
   max-width: var(--game-max-width);
   margin: 0 auto;
-  height: calc(95vh - var(--header-height));
+  height: calc(100% - var(--header-height));
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -114,6 +197,8 @@
 }
 .game-keyboard {
   text-align: center;
+  margin-bottom: 10px;
+  padding: 10px;
 }
 .game-container {
     display: grid;
