@@ -1,15 +1,12 @@
 <script lang="ts">
-    const guessRows:string[][] = [
-        ['', '', '', '', ''],
-        ['', '', '', '', ''],
-        ['', '', '', '', ''],
-        ['', '', '', '', ''],
-        ['', '', '', '', ''],
-        ['', '', '', '', '']
-    ]
+
+    export let data:string[][];
+
+    console.log(data[0].length)
+    const word = 'robin'
 </script>
 
-{#each guessRows as guessRow, index }
+{#each data as guessRow, index }
     <div class="row" data-guess={`guessrow-${index}`}>
         {#each guessRow as tile }
             <div class="tile">{tile}</div>
@@ -33,10 +30,11 @@
     font-weight: bold;
     vertical-align: middle;
     box-sizing: border-box;
-    color: var(--tile-text-color);
+    color: var(--color-tone-1);
     text-transform: uppercase;
     user-select: none;
     border: 2px solid var(--color-tone-4);
 }
+
 
 </style>
