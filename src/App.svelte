@@ -7,6 +7,8 @@
 
   let showOverlay:boolean;
 
+  const word = 'robin'
+
   const guessRows:string[][] = [
         ['', '', '', '', ''],
         ['', '', '', '', ''],
@@ -17,43 +19,71 @@
   ]
 
   let n = 0
-  let row =0
+  let row = 0
+  const maxLetter = 5
+  const maxRow = 6
 
   const handdleArray = (e) => {
+    if(e.detail.toLowerCase() == 'enter') {
+      submitAnswer() 
+      return
+    }
     updateArray(e.detail)
   }
 
   const delKey = () => {
-    const currentRow = 0
     if (n < 1) return
     n--
-    guessRows[currentRow][n] = ''
+    guessRows[row][n] = ''
   }
 
   const handdlekeyDown = (e) => {
     const letter = e.detail
-      if(letter == 'Backspace' || letter == 'Delete') {
-        delKey() 
-        return
-      }
       if(letter.match(/^[a-z]$/)) {
         updateArray(letter)
         return
       }
+      if(letter == 'Backspace' || letter == 'Delete') {
+        delKey() 
+        return
+      }
+      if(letter === 'Enter') {
+        submitAnswer() 
+        return
+      }
+  }
+
+  const submitAnswer = () => {
+    if(guessRows[row].includes('')) {
+      console.log('kureng')
+      return
+    }
+    const guess = guessRows[row].join('').toLowerCase()
+    checkAnswer(guess)
+  }
+
+  const checkAnswer = (guess:string) => {
+    if(word.toLowerCase() === guess) console.log('bener')
+    else nextRow()
   }
 
   const updateArray = (e) => {
     let max = n
-    let maxRow = row
     max++
-    maxRow++
 
-    let lastLetter = guessRows[row][5]
+    let lastLetter = guessRows[row][maxLetter]
 
-    if(max > 5 && lastLetter !== '') return
-    guessRows[row][n] = e
-    n++
-    console.log(guessRows)
+    if(max > maxLetter && lastLetter !== '') return
+
+      guessRows[row][n] = e
+      n++
+  }
+
+  const nextRow = () => {
+    let maximumAttempt = maxRow - 2
+    if(row > maximumAttempt) return
+    row = row + 1
+    n = 0
   }
 
 
@@ -72,7 +102,7 @@
     <Board data={guessRows} />
   </section>
   <section class="game-keyboard">
-    <Keys data={guessRows} on:keyPressed={handdleArray} on:keyDown={handdlekeyDown} on:delKey={delKey} />
+    <Keys on:keyPressed={handdleArray} on:keyDown={handdlekeyDown} on:delKey={delKey} />
   </section>
 </main>
 

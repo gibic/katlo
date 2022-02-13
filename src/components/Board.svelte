@@ -1,9 +1,7 @@
 <script lang="ts">
 
     export let data:string[][];
-
-    console.log(data[0].length)
-    const word = 'robin'
+    
 </script>
 
 {#each data as guessRow, index }

@@ -32,31 +32,10 @@
       'M',
   ]
 
-let n = 0
-let row = 0
-export let data:string[][];
-
-  const handleSubmit = (e:any) => {
-    console.log('submit', e)
-  }
-
- const sendLetter = (i) => {
-  let max = n
-  let maxRow = row
-  max++
-  maxRow++
-
-    if(maxRow <= 6) {
-      if(max > 5) return
-      data[row][n] = i
-      n++
-      return data
-    }
-  }
 
 </script>
 
-<svelte:window on:keydown={(e) => dispatch('keyDown', e.key)}/>
+<svelte:window on:keydown|preventDefault={(e) => dispatch('keyDown', e.key)}/>
 
 <div class="row">
     {#each keys as key }
