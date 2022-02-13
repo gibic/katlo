@@ -8,6 +8,7 @@
   let showOverlay:boolean;
 
   const word = 'robin'
+  let emit = false
 
   const guessRows:string[][] = [
         ['', '', '', '', ''],
@@ -54,6 +55,7 @@
   }
 
   const submitAnswer = () => {
+    if(row === maxRow) return
     if(guessRows[row].includes('')) {
       console.log('kureng')
       return
@@ -63,11 +65,15 @@
   }
 
   const checkAnswer = (guess:string) => {
-    if(word.toLowerCase() === guess) console.log('bener')
-    else nextRow()
+    if(word.toLowerCase() === guess) {
+      return
+    } 
+    emit = true
+    nextRow()
   }
 
   const updateArray = (e) => {
+    if(row === maxRow) return
     let max = n
     max++
 
@@ -80,12 +86,11 @@
   }
 
   const nextRow = () => {
-    let maximumAttempt = maxRow - 2
+    let maximumAttempt = maxRow - 1
     if(row > maximumAttempt) return
     row = row + 1
     n = 0
   }
-
 
 	settings.set(
 		(JSON.parse(localStorage.getItem("settings")) as Settings) || createDefaultSettings()
@@ -99,7 +104,7 @@
 <main id="game">
   <section class="message-container"></section>
   <section class="game-container">
-    <Board data={guessRows} />
+    <Board data={guessRows} {word} {row} {emit} />
   </section>
   <section class="game-keyboard">
     <Keys on:keyPressed={handdleArray} on:keyDown={handdlekeyDown} on:delKey={delKey} />
