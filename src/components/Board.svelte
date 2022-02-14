@@ -66,7 +66,7 @@
 
 .active {
     border: 2px solid var(--color-tone-3);
-    animation: bounce 500ms ease-in-out;
+    animation: bounce 200ms ease-in-out;
     transition: background-color 100ms linear;
     -webkit-transition: background-color 100ms linear;
     -ms-transition: background-color 100ms linear;
@@ -75,7 +75,7 @@
     background-color: var(--color-correct) !important;
     color: var(--tile-text-color);
     border-color: var(--color-correct) !important;
-    animation: dance 500ms ease-in-out;
+    animation: dance 200ms ease-in;
     transition: all 100ms linear;
     -webkit-transition: all 100ms linear;
     -ms-transition: all 100ms linear;
@@ -87,7 +87,7 @@
     transition: all 100ms linear;
     -webkit-transition: all 100ms linear;
     -ms-transition: all 100ms linear;
-    animation: dance 500ms ease-in-out;
+    animation: dance 200ms ease-in;
 }
 .wrong {
     background-color: var(--color-absent);
@@ -96,7 +96,7 @@
     transition: all 100ms linear;
     -webkit-transition: all 100ms linear;
     -ms-transition: all 100ms linear;
-    animation: dance 500ms ease-in-out;
+    animation: dance 200ms ease-in;
 }
 
 @keyframes bounce {
