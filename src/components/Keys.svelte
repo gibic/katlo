@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
+  import { correctState, missedState, wrongState } from "../store";
 
   const dispatch = createEventDispatcher()
   const keys: string[] = [
@@ -31,15 +32,20 @@
       'N',
       'M',
   ]
-
-
 </script>
 
 <svelte:window on:keydown|preventDefault={(e) => dispatch('keyDown', e.key)}/>
 
 <div class="row">
     {#each keys as key }
-        <button on:click={() => dispatch('keyPressed', key)}>{key}</button>
+        <button 
+            on:click={() => dispatch('keyPressed', key)}
+            class:correct={$correctState.includes(key.toLowerCase())}
+            class:missed={$missedState.includes(key.toLowerCase())}
+            class:wrong={$wrongState.includes(key.toLowerCase())}
+        >
+            {key}
+        </button>
     {/each}
     <button on:click={() => dispatch('delKey')}>
         <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
@@ -50,10 +56,11 @@
 <style>
     .row {
         display: grid;
-        gap: .25em;
-        grid-template-columns:repeat(20, minmax(auto, 1.25em));
-        grid-auto-rows: 3em;
+        gap: .5em;
+        grid-template-columns:repeat(20, 1em);
+        grid-auto-rows: 3.2em;
         justify-content: center;
+        max-width: var(--game-max-width);
     }
 
     button {
@@ -77,10 +84,19 @@
     button:nth-child(28) {
         grid-column: span 3;
     }
-    @media only screen and (min-width:768px) {
-        .row {
-            grid-template-columns:repeat(20, minmax(auto, 2.25em));
-            grid-auto-rows: 4em;
-        }
-    }
+
+.correct {
+    background-color: var(--color-correct) !important;
+    color: var(--tile-text-color);
+}
+.missed {
+    background-color: var(--yellow);
+    color: var(--tile-text-color);
+    border-color: var(--yellow);
+}
+.wrong {
+    background-color: var(--color-absent);
+    color: var(--tile-text-color);
+    border-color: var(--color-absent);
+}
 </style>

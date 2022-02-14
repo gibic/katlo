@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { createDefaultSettings, settings } from "../store";
+  import { createDefaultSettings } from "./utils";
+  import { settings } from "./store";
   import Header from "./Header.svelte";
   import Overlay from "./Overlay.svelte";
   import Keys from "./components/Keys.svelte"
@@ -68,12 +69,14 @@
     if(word.toLowerCase() === guess) {
       return
     } 
+  
     emit = true
     nextRow()
   }
 
   const updateArray = (e) => {
     if(row === maxRow) return
+
     let max = n
     max++
 
@@ -104,16 +107,28 @@
 <main id="game">
   <section class="message-container"></section>
   <section class="game-container">
-    <Board data={guessRows} {word} {row} {emit} />
+    <Board 
+      data={guessRows} 
+      {word} 
+      {row} 
+      {emit} 
+    />
   </section>
   <section class="game-keyboard">
-    <Keys on:keyPressed={handdleArray} on:keyDown={handdlekeyDown} on:delKey={delKey} />
+    <Keys 
+      on:keyPressed={handdleArray} 
+      on:keyDown={handdlekeyDown} 
+      on:delKey={delKey} 
+    />
   </section>
 </main>
 
 <Overlay {showOverlay} on:click={() => showOverlay = false} />
 
 <style>
+  :global(html, #app) {
+    height: 100%;
+  }
   :global(:root) {
     --green: #6aaa64;
     --darkendGreen: #538d4e;
@@ -187,9 +202,6 @@
 :global(:root, .dark) {
     --color-background: var(--color-tone-7);
 }
-:global(#app) {
-  height: 100vh;
-}
 #game {
   width: 100%;
   max-width: var(--game-max-width);
@@ -204,10 +216,11 @@
   text-align: center;
   margin-bottom: 10px;
   padding: 10px;
+  max-width: var(--game-max-width);
 }
 .game-container {
     display: grid;
-    grid-template-rows: repeat(6, 4em);
+    grid-template-rows: repeat(6, 2.8em);
     gap: .25em;
 }
 </style>
