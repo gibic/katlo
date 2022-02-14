@@ -128,6 +128,8 @@
 <style>
   :global(html, #app) {
     height: 100%;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
   }
   :global(:root) {
     --green: #6aaa64;
@@ -141,11 +143,9 @@
     --black: #212121;
     --orange: #f5793a;
     --blue: #85c0f9;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
     --header-height: 50px;
     --keyboard-height: 200px;
-    --game-max-width: 500px;
+    --game-max-width: 350px;
     --color-tone-1: #000000;
     --color-tone-2: #787c7e;
     --color-tone-3: #878a8c;
@@ -220,7 +220,9 @@
 }
 .game-container {
     display: grid;
-    grid-template-rows: repeat(6, 2.8em);
+    grid-template-rows: repeat(6, 1fr);
     gap: .25em;
+    min-height: 425px;
+    width: 100%;
 }
 </style>

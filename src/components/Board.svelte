@@ -43,7 +43,7 @@
 <style>
 .row {
   display: grid;
-  grid-template-columns: repeat(5, 2.8em);
+  grid-template-columns: repeat(5, 1fr);
   gap: .25em;
 }
 
