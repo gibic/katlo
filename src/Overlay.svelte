@@ -1,7 +1,7 @@
 <script lang="ts">
 import { fly } from 'svelte/transition';
 import { onMount } from "svelte";
-import { settings } from "../store";
+import { settings } from "./store";
 import Setting from './components/Setting.svelte'
 
 export let showOverlay:boolean
