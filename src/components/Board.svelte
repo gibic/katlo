@@ -1,38 +1,27 @@
 <script lang="ts">
-    import { correctState, missedState, wrongState } from "../store";
+    import { tileState, submitted, currentRow } from "../store";
 
     export let data:string[][];
-    export let row
-    export let word
-    export let emit = false
-
-    const exactLetter = (s:string, n:number) => {
-        let l = s.toLowerCase()
-        if (word[n] === l) {
-            $correctState = [...$correctState, l];
-            return true
-        } 
-        else if (word.includes(l)) {
-            $missedState = [...$missedState, l];
-        } 
-        else {
-            $wrongState = [...$wrongState, l];
-        }
-    }
-
+    
     let increment = 0
-    $: emit ? increment = .5 : increment
+    $: $submitted ? increment = .5 : increment
+    
 </script>
 {#each data as guessRow, index }
     <div class="row" data-guess={`row-${index}`}>
         {#each guessRow as tile, idx }
             <div data-position={`row-${index}-tile-${idx}`} 
                 class="tile"
-                class:active={ index == row && tile }
-                class:correct={emit && index < row && exactLetter(tile, idx)} 
-                class:missed={emit && index < row && word.includes(tile.toLowerCase())}
-                class:wrong={emit && index < row && !word.includes(tile.toLowerCase())}
-                style={emit && index < row && tile ? `transition-delay: ${increment * idx}s;animation-delay: ${increment * idx}s` : `transition-delay: ${increment * 0}s;animation-delay: ${increment * 0}s`}
+                class:active={index == $currentRow && tile}
+                class:missed={$tileState[index][idx] === 'missed'}
+                class:correct={$tileState[index][idx] === 'correct'}
+                class:wrong={$tileState[index][idx] === 'wrong'}
+                class:dance={index === $currentRow - 1}
+                style={
+                    $submitted && index < $currentRow && tile ? 
+                    `transition-delay: ${increment * idx}s;animation-delay: ${increment * idx}s` : 
+                    `transition-delay: ${increment * 0}s;animation-delay: ${increment * 0}s`
+                }
             >
                 {tile}
             </div>
@@ -66,37 +55,34 @@
 
 .active {
     border: 2px solid var(--color-tone-3);
-    animation: bounce 500ms ease-in-out;
+    animation: bounce 200ms ease-in-out;
     transition: background-color 100ms linear;
     -webkit-transition: background-color 100ms linear;
     -ms-transition: background-color 100ms linear;
 }
+
+.missed {
+    background-color: var(--yellow) !important;
+    color: var(--tile-text-color);
+    border-color: var(--yellow) !important;
+}
+
 .correct {
     background-color: var(--color-correct) !important;
     color: var(--tile-text-color);
     border-color: var(--color-correct) !important;
-    animation: dance 500ms ease-in-out;
-    transition: all 100ms linear;
-    -webkit-transition: all 100ms linear;
-    -ms-transition: all 100ms linear;
-}
-.missed {
-    background-color: var(--yellow);
-    color: var(--tile-text-color);
-    border-color: var(--yellow);
-    transition: all 100ms linear;
-    -webkit-transition: all 100ms linear;
-    -ms-transition: all 100ms linear;
-    animation: dance 500ms ease-in-out;
 }
 .wrong {
     background-color: var(--color-absent);
     color: var(--tile-text-color);
     border-color: var(--color-absent);
+}
+
+.dance {
     transition: all 100ms linear;
     -webkit-transition: all 100ms linear;
     -ms-transition: all 100ms linear;
-    animation: dance 500ms ease-in-out;
+    animation: dance 500ms linear;
 }
 
 @keyframes bounce {
