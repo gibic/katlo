@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createDefaultSettings, words, createGuessRows } from "./utils";
-  import { settings, submitted, currentRow, tileState } from "./store";
+  import { settings, submitted, currentRow, tileState, correctState, wrongState, missedState } from "./store";
   import Header from "./Header.svelte";
   import Overlay from "./Overlay.svelte";
   import Keys from "./components/Keys.svelte"
@@ -69,11 +69,14 @@
         let solutionLetter = solution.charAt(i);
 
         if (guessLetter === solutionLetter) {
+          result.push("correct");
+          $correctState = [...$correctState, guessLetter]
           if(i < 4) {
                 minusOneStr = minusOneStr.slice(0, minusOneStr.indexOf(guessLetter)) + minusOneStr.slice(minusOneStr.indexOf(guessLetter) + 1)
           }
         }
-        else if (minusOneStr.indexOf(guessLetter) != -1) {    
+        else if (minusOneStr.indexOf(guessLetter) != -1) {   
+          $missedState = [...$missedState, guessLetter] 
           if(i < 4) {
                 minusOneStr = minusOneStr.slice(0, minusOneStr.indexOf(guessLetter)) + minusOneStr.slice(minusOneStr.indexOf(guessLetter) + 1)
           }
@@ -81,6 +84,7 @@
         }
         else {
           result.push("wrong");
+          $wrongState = [...$wrongState, guessLetter]
         }
       }
 
@@ -89,17 +93,19 @@
     let temp = []
 
     const g = guess.split('').map((letter, index) => {
-        const wordmap = word[index]
+        const wordmap = word.charAt(index)
         if(wordmap === letter) temp.push(letter)
         return { letter, wordmap }
     })
     
 
     for(let i = 0;i < 5; i++) {
-        if(temp.includes(g[i].letter)) $tileState[$currentRow][i] = 'wrong'
-        if(g[i].letter === g[i].wordmap) $tileState[$currentRow][i] = 'correct'
-    }
-
+        if( $tileState[$currentRow][i] === 'missed') {
+          if(temp.includes(g[i].letter)) {
+            $tileState[$currentRow][i] = 'wrong'
+          } 
+        }
+    } 
 
     let s = word.toLowerCase()
 
