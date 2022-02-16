@@ -267,4 +267,13 @@
     min-height: 290px;
     width: 100%;
 }
+
+@media screen and (max-width: 767px) {
+  #game {
+    max-width: 90vw;
+  }
+  .game-container {
+        min-height: 380px;
+    }
+}
 </style>

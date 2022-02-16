@@ -84,7 +84,6 @@
     -ms-transition: all 100ms linear;
     animation: dance 500ms linear;
 }
-
 @keyframes bounce {
     0% {
         transform: scale(1);
