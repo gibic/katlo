@@ -1,7 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { correctState, missedState, wrongState } from "../store";
-
   const dispatch = createEventDispatcher()
   const keys: string[] = [
       'Q',
@@ -40,7 +39,7 @@
     {#each keys as key }
         <button 
             on:click={() => dispatch('keyPressed', key)}
-            class:correct={$correctState.includes(key.toLowerCase())}
+            class:correct={$correctState.filter(i => i.letter).includes(key.toLowerCase())}
             class:missed={$missedState.includes(key.toLowerCase())}
             class:wrong={$wrongState.includes(key.toLowerCase())}
         >

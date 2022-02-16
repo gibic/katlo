@@ -1,27 +1,19 @@
 <script lang="ts">
-  import { createDefaultSettings } from "./utils";
-  import { settings } from "./store";
+  import { createDefaultSettings, words, createGuessRows } from "./utils";
+  import { settings, submitted, currentRow, tileState } from "./store";
   import Header from "./Header.svelte";
   import Overlay from "./Overlay.svelte";
   import Keys from "./components/Keys.svelte"
   import Board from "./components/Board.svelte"
 
   let showOverlay:boolean;
+  const guessRows = createGuessRows()
+  const word = 'aroma'
 
-  const word = 'robin'
-  let emit = false
-
-  const guessRows:string[][] = [
-        ['', '', '', '', ''],
-        ['', '', '', '', ''],
-        ['', '', '', '', ''],
-        ['', '', '', '', ''],
-        ['', '', '', '', ''],
-        ['', '', '', '', '']
-  ]
+  $submitted = false
+  $currentRow = 0
 
   let n = 0
-  let row = 0
   const maxLetter = 5
   const maxRow = 6
 
@@ -36,7 +28,7 @@
   const delKey = () => {
     if (n < 1) return
     n--
-    guessRows[row][n] = ''
+    guessRows[$currentRow][n] = ''
   }
 
   const handdlekeyDown = (e) => {
@@ -56,49 +48,96 @@
   }
 
   const submitAnswer = () => {
-    if(row === maxRow) return
-    if(guessRows[row].includes('')) {
+    if($currentRow === maxRow) return
+    if(guessRows[$currentRow].includes('')) {
       console.log('kureng')
       return
     }
-    const guess = guessRows[row].join('').toLowerCase()
+    const guess = guessRows[$currentRow].join('').toLowerCase()
     checkAnswer(guess)
   }
 
+  
   const checkAnswer = (guess:string) => {
-    if(word.toLowerCase() === guess) {
+
+    let result = []
+    let minusOneStr = word
+    let solution = word
+
+    for (let i = 0; i < guess.length; i++) {
+        let guessLetter = guess.charAt(i);
+        let solutionLetter = solution.charAt(i);
+
+        if (guessLetter === solutionLetter) {
+          if(i < 4) {
+                minusOneStr = minusOneStr.slice(0, minusOneStr.indexOf(guessLetter)) + minusOneStr.slice(minusOneStr.indexOf(guessLetter) + 1)
+          }
+        }
+        else if (minusOneStr.indexOf(guessLetter) != -1) {    
+          if(i < 4) {
+                minusOneStr = minusOneStr.slice(0, minusOneStr.indexOf(guessLetter)) + minusOneStr.slice(minusOneStr.indexOf(guessLetter) + 1)
+          }
+          result.push("missed");
+        }
+        else {
+          result.push("wrong");
+        }
+      }
+
+      $tileState[$currentRow] = [...result]
+
+    let temp = []
+
+    const g = guess.split('').map((letter, index) => {
+        const wordmap = word[index]
+        if(wordmap === letter) temp.push(letter)
+        return { letter, wordmap }
+    })
+    
+
+    for(let i = 0;i < 5; i++) {
+        if(temp.includes(g[i].letter)) $tileState[$currentRow][i] = 'wrong'
+        if(g[i].letter === g[i].wordmap) $tileState[$currentRow][i] = 'correct'
+    }
+
+
+    let s = word.toLowerCase()
+
+    //win condition
+    if(s === guess) {
+      // popup, winning modal
       return
     } 
   
-    emit = true
+    $submitted = true
     nextRow()
   }
 
-  const updateArray = (e) => {
-    if(row === maxRow) return
-
+  const updateArray = (e:string) => {
     let max = n
     max++
 
-    let lastLetter = guessRows[row][maxLetter]
+    if($currentRow === maxRow) return
+    if(max > maxLetter && guessRows[$currentRow][maxLetter] !== '') return
 
-    if(max > maxLetter && lastLetter !== '') return
-
-      guessRows[row][n] = e
-      n++
+    guessRows[$currentRow][n] = e
+    n++
   }
 
   const nextRow = () => {
     let maximumAttempt = maxRow - 1
-    if(row > maximumAttempt) return
-    row = row + 1
+
+    if($currentRow > maximumAttempt) return
+
+    $currentRow = $currentRow + 1
     n = 0
   }
 
 	settings.set(
 		(JSON.parse(localStorage.getItem("settings")) as Settings) || createDefaultSettings()
-	);
-	settings.subscribe((s) => localStorage.setItem("settings", JSON.stringify(s)));
+	)
+
+	settings.subscribe((s) => localStorage.setItem("settings", JSON.stringify(s)))
 </script>
 
 
@@ -109,9 +148,6 @@
   <section class="game-container">
     <Board 
       data={guessRows} 
-      {word} 
-      {row} 
-      {emit} 
     />
   </section>
   <section class="game-keyboard">
