@@ -101,8 +101,8 @@
 
 @media screen and (max-width:767px) {
     .row {
-        gap: .4em;
-        grid-template-columns: repeat(20, .8em);
+        gap: .2em;
+        grid-template-columns: repeat(20, 1em);
         grid-auto-rows: 3.8em;
     }
 }
