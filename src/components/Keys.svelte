@@ -57,7 +57,7 @@
         display: grid;
         gap: .5em;
         grid-template-columns:repeat(20, 1.1em);
-        grid-auto-rows: 3.5em;
+        grid-auto-rows: 3.2em;
         justify-content: center;
         max-width: var(--game-max-width);
     }

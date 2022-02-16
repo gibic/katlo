@@ -187,7 +187,7 @@
     --blue: #85c0f9;
     --header-height: 50px;
     --keyboard-height: 200px;
-    --game-max-width: 350px;
+    --game-max-width: 240px;
     --color-tone-1: #000000;
     --color-tone-2: #787c7e;
     --color-tone-3: #878a8c;
@@ -264,7 +264,7 @@
     display: grid;
     grid-template-rows: repeat(6, 1fr);
     gap: .25em;
-    min-height: 425px;
+    min-height: 290px;
     width: 100%;
 }
 </style>
