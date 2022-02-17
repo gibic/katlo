@@ -1,14 +1,31 @@
 <script lang="ts">
-  import { createDefaultSettings, words, createGuessRows } from "./utils";
-  import { settings, submitted, currentRow, tileState, correctState, wrongState, missedState } from "./store";
+  import { 
+    createDefaultSettings, 
+    words, 
+    createGuessRows 
+  } from "./utils";
+  
+  import { 
+    settings, 
+    submitted, 
+    currentRow, 
+    tileState, 
+    correctState, 
+    wrongState, 
+    missedState, 
+    visible 
+  } from "./store";
   import Header from "./Header.svelte";
   import Overlay from "./Overlay.svelte";
   import Keys from "./components/Keys.svelte"
   import Board from "./components/Board.svelte"
+  import Toast from "./components/Toast.svelte"
 
   let showOverlay:boolean;
   const guessRows = createGuessRows()
   const word = 'aroma'
+  let shake = false
+  let message:string
 
   $submitted = false
   $currentRow = 0
@@ -16,6 +33,13 @@
   let n = 0
   const maxLetter = 5
   const maxRow = 6
+
+  
+	settings.set(
+		(JSON.parse(localStorage.getItem("settings")) as Settings) || createDefaultSettings()
+	)
+
+	settings.subscribe((s) => localStorage.setItem("settings", JSON.stringify(s)))
 
   const handdleArray = (e) => {
     if(e.detail.toLowerCase() == 'enter') {
@@ -51,9 +75,18 @@
     if($currentRow === maxRow) return
     if(guessRows[$currentRow].includes('')) {
       console.log('kureng')
+      message = 'Jumlah huruf kurang'
+      $visible = true
       return
     }
     const guess = guessRows[$currentRow].join('').toLowerCase()
+
+    if(!words.valid.includes(guess)) {
+      shake = true
+      message = 'Word not on list'
+      $visible = true
+      return
+    }
     checkAnswer(guess)
   }
 
@@ -120,6 +153,7 @@
   }
 
   const updateArray = (e:string) => {
+    shake = false
     let max = n
     max++
 
@@ -139,21 +173,19 @@
     n = 0
   }
 
-	settings.set(
-		(JSON.parse(localStorage.getItem("settings")) as Settings) || createDefaultSettings()
-	)
-
-	settings.subscribe((s) => localStorage.setItem("settings", JSON.stringify(s)))
 </script>
 
 
 <Header on:click={() => showOverlay = true} />
 
 <main id="game">
-  <section class="message-container"></section>
+  <section class="message-container">
+    <Toast {message} />
+  </section>
   <section class="game-container">
     <Board 
       data={guessRows} 
+      {shake}
     />
   </section>
   <section class="game-keyboard">

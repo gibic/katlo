@@ -8,3 +8,4 @@ export const missedState = writable([]);
 export const wrongState = writable([]);
 export const submitted = writable();
 export const currentRow = writable(0);
+export const visible = writable(false);

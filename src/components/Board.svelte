@@ -2,16 +2,17 @@
     import { tileState, submitted, currentRow } from "../store";
 
     export let data:string[][];
+
+    export let shake:boolean
     
     let increment = 0
     $: $submitted ? increment = .5 : increment
     
 </script>
 {#each data as guessRow, index }
-    <div class="row" data-guess={`row-${index}`}>
+    <div class="row" class:shake={shake && index == $currentRow}>
         {#each guessRow as tile, idx }
-            <div data-position={`row-${index}-tile-${idx}`} 
-                class="tile"
+            <div class="tile" 
                 class:active={index == $currentRow && tile}
                 class:missed={$tileState[index][idx] === 'missed'}
                 class:correct={$tileState[index][idx] === 'correct'}
@@ -84,6 +85,10 @@
     -ms-transition: all 100ms linear;
     animation: dance 500ms linear;
 }
+
+.shake {
+    animation: shake 200ms linear;
+}
 @keyframes bounce {
     0% {
         transform: scale(1);
@@ -93,6 +98,24 @@
     }
     100% {
         transform: scale(1);
+    }
+}
+
+@keyframes shake {
+    0%,
+    90% {
+        transform: translateX(-5px);
+    }
+
+    50% {
+        transform: translateX(-5px);
+    }
+    30%,
+    80% {
+        transform: translateX(5px);
+    }
+    100% {
+        transform: translateX(0);
     }
 }
 

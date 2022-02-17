@@ -10,7 +10,7 @@ export const words = {
 export function createDefaultSettings(): Settings {
 	return {
 		dark: true,
-	};
+	}
 }
 
 export function gameState() {
