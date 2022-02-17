@@ -1,24 +1,52 @@
 <script lang="ts">
-  import { createDefaultSettings, words, createGuessRows } from "./utils";
-  import { settings, submitted, currentRow, tileState, correctState, wrongState, missedState } from "./store";
-  import Header from "./Header.svelte";
-  import Overlay from "./Overlay.svelte";
+  import { onDestroy } from 'svelte'
+  import { 
+    createDefaultSettings, 
+    words, 
+    createGuessRows 
+  } from "./utils"
+  import { 
+    settings, 
+    submitted, 
+    currentRow, 
+    tileState, 
+    correctState, 
+    wrongState, 
+    missedState, 
+    visible 
+  } from "./store"
+  import Header from "./Header.svelte"
+  import Overlay from "./Overlay.svelte"
   import Keys from "./components/Keys.svelte"
   import Board from "./components/Board.svelte"
+  import Toast from "./components/Toast.svelte"
 
   let showOverlay:boolean;
   const guessRows = createGuessRows()
-  const word = 'aroma'
+  
+  let shake:boolean
+  let message:string
+  let jumpy:boolean
+  let stop = false
 
-  $submitted = false
-  $currentRow = 0
-
-  let n = 0
+  let pos = 0
   const maxLetter = 5
   const maxRow = 6
 
+	settings.set((JSON.parse(localStorage.getItem("settings")) as Settings) || createDefaultSettings())
+  const unsubscribe = settings.subscribe((s) => localStorage.setItem("settings", JSON.stringify(s)))
+	onDestroy(unsubscribe)
+
+  const offsetFromDate = new Date('2022, 1, 17')
+  var milliseconds = offsetFromDate.getTime();
+  const msOffset = Date.now() - milliseconds
+  const dayOffset = msOffset / 1000 / 60 / 60 / 24
+  const word = words.words[Math.floor(dayOffset)]
+
+
   const handdleArray = (e) => {
     if(e.detail.toLowerCase() == 'enter') {
+      shake = false
       submitAnswer() 
       return
     }
@@ -26,9 +54,9 @@
   }
 
   const delKey = () => {
-    if (n < 1) return
-    n--
-    guessRows[$currentRow][n] = ''
+    if (pos < 1) return
+    pos--
+    guessRows[$currentRow][pos] = ''
   }
 
   const handdlekeyDown = (e) => {
@@ -42,18 +70,30 @@
         return
       }
       if(letter === 'Enter') {
+        shake = false
         submitAnswer() 
         return
       }
   }
 
   const submitAnswer = () => {
+    const guess = guessRows[$currentRow].join('').toLowerCase()
+    
     if($currentRow === maxRow) return
+
     if(guessRows[$currentRow].includes('')) {
-      console.log('kureng')
+      message = 'Jumlah huruf kurang'
+      $visible = true
       return
     }
-    const guess = guessRows[$currentRow].join('').toLowerCase()
+    
+    if(!words.valid.includes(guess)) {
+      shake = true
+      message = 'Word not on list'
+      $visible = true
+      return
+    }
+
     checkAnswer(guess)
   }
 
@@ -105,55 +145,50 @@
             $tileState[$currentRow][i] = 'wrong'
           } 
         }
-    } 
-
-    let s = word.toLowerCase()
-
-    //win condition
-    if(s === guess) {
-      // popup, winning modal
-      return
-    } 
-  
+    }
     $submitted = true
+    if(word === guess) {
+      stop = true
+      setTimeout(() => jumpy = true, 2200)
+    }
+
     nextRow()
   }
 
   const updateArray = (e:string) => {
-    let max = n
+    shake = false
+    let max = pos
     max++
 
-    if($currentRow === maxRow) return
+    if(stop || $currentRow === maxRow) return
     if(max > maxLetter && guessRows[$currentRow][maxLetter] !== '') return
 
-    guessRows[$currentRow][n] = e
-    n++
+    guessRows[$currentRow][pos] = e
+    pos++
   }
 
   const nextRow = () => {
     let maximumAttempt = maxRow - 1
-
     if($currentRow > maximumAttempt) return
 
     $currentRow = $currentRow + 1
-    n = 0
+    pos = 0
   }
 
-	settings.set(
-		(JSON.parse(localStorage.getItem("settings")) as Settings) || createDefaultSettings()
-	)
-
-	settings.subscribe((s) => localStorage.setItem("settings", JSON.stringify(s)))
 </script>
 
 
 <Header on:click={() => showOverlay = true} />
 
 <main id="game">
-  <section class="message-container"></section>
+  <section class="message-container">
+    <Toast {message} />
+  </section>
   <section class="game-container">
     <Board 
       data={guessRows} 
+      {shake}
+      {jumpy}
     />
   </section>
   <section class="game-keyboard">
@@ -274,6 +309,14 @@
   }
   .game-container {
         min-height: 380px;
+    }
+}
+@media screen and (min-width: 1440px) {
+  #game {
+    max-width: 400px;
+  }
+  .game-container {
+        min-height: 470px;
     }
 }
 </style>

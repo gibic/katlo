@@ -53,7 +53,7 @@ let root: HTMLElement;
 .content {
     position: relative;
     color: var(--color-tone-1);
-    max-width: var(--game-max-width);
+    max-width: 500px;
     width: 100%;
     overflow-y: auto;
     height: 100%;
