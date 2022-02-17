@@ -16,7 +16,7 @@
     color: var(--color-tone-7);
     padding: .5rem 1.5rem;
     border-radius: .5rem;
-    top: 60px;
+    top: 100px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 1;

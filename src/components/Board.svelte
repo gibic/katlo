@@ -2,12 +2,18 @@
     import { tileState, submitted, currentRow } from "../store";
 
     export let data:string[][];
+    export let shake:boolean = false
+    export let jumpy:boolean = false
 
-    export let shake:boolean
-    
     let increment = 0
-    $: $submitted ? increment = .5 : increment
+    $: $submitted ? increment = .4 : increment
     
+    $: if(shake) {
+        setTimeout(() => shake = false, 200)
+    }
+    $: if(jumpy) {
+        increment = .35
+    }
 </script>
 {#each data as guessRow, index }
     <div class="row" class:shake={shake && index == $currentRow}>
@@ -18,11 +24,8 @@
                 class:correct={$tileState[index][idx] === 'correct'}
                 class:wrong={$tileState[index][idx] === 'wrong'}
                 class:dance={index === $currentRow - 1}
-                style={
-                    $submitted && index < $currentRow && tile ? 
-                    `transition-delay: ${increment * idx}s;animation-delay: ${increment * idx}s` : 
-                    `transition-delay: ${increment * 0}s;animation-delay: ${increment * 0}s`
-                }
+                class:jump={jumpy && index === $currentRow - 1}
+                style={ $submitted && index < $currentRow && tile ? `transition-delay: ${increment * idx}s;animation-delay: ${increment * idx}s` : ''}
             >
                 {tile}
             </div>
@@ -89,6 +92,12 @@
 .shake {
     animation: shake 200ms linear;
 }
+.jump {
+    transition: all 100ms linear;
+    -webkit-transition: all 100ms linear;
+    -ms-transition: all 100ms linear;
+    animation: jump 600ms ease-in-out;
+}
 @keyframes bounce {
     0% {
         transform: scale(1);
@@ -128,6 +137,24 @@
     }
     100% {
         transform: rotateX(0deg);
+    }
+}
+
+@keyframes jump {
+    20% {
+        transform: translateY(-50%);
+    }
+    40% {
+        transform: translateY(5%);
+    }
+    60% {
+        transform: translateY(-25%);
+    }
+    80% {
+        transform: translateY(2.5%);
+    }
+    100% {
+        transform: translateY(0);
     }
 }
 </style>
