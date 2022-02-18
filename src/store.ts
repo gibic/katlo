@@ -1,7 +1,9 @@
 import { writable } from "svelte/store";
-import { createDefaultSettings, gameState } from "./utils";
+import { createBoardState, createDefaultSettings, gameState } from "./utils";
 
 export const settings = writable(createDefaultSettings());
+export const boardState = writable(createBoardState());
+export const evaluations = writable([]);
 export const tileState = writable(gameState());
 export const correctState = writable([]);
 export const missedState = writable([]);

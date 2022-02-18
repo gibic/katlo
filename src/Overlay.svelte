@@ -1,21 +1,9 @@
 <script lang="ts">
 import { fly } from 'svelte/transition';
-import { onMount } from "svelte";
 import { settings } from "./store";
 import Setting from './components/Setting.svelte'
 
 export let showOverlay:boolean
-
-let root: HTMLElement;
-	onMount(() => {
-		root = document.documentElement;
-	});
-	$: {
-		if (root) {
-			$settings.dark ? root.classList.add("dark") : root.classList.remove("dark");
-			localStorage.setItem("settings", JSON.stringify($settings));
-		}
-	}
 
 </script>
 

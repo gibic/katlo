@@ -12,7 +12,7 @@
         setTimeout(() => shake = false, 200)
     }
     $: if(jumpy) {
-        increment = .35
+        increment = .1
     }
 </script>
 {#each data as guessRow, index }
@@ -93,10 +93,10 @@
     animation: shake 200ms linear;
 }
 .jump {
-    transition: all 100ms linear;
-    -webkit-transition: all 100ms linear;
-    -ms-transition: all 100ms linear;
-    animation: jump 600ms ease-in-out;
+    transition: all 800ms linear;
+    -webkit-transition:all 800ms linear;
+    -ms-transition: all 800ms linear;
+    animation: jump 800ms linear;
 }
 @keyframes bounce {
     0% {
@@ -144,14 +144,8 @@
     20% {
         transform: translateY(-50%);
     }
-    40% {
-        transform: translateY(5%);
-    }
     60% {
         transform: translateY(-25%);
-    }
-    80% {
-        transform: translateY(2.5%);
     }
     100% {
         transform: translateY(0);

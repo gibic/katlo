@@ -1,18 +1,22 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { onDestroy } from 'svelte'
   import { 
     createDefaultSettings, 
     words, 
-    createGuessRows 
+    createGuessRows,
+    createBoardState,
   } from "./utils"
   import { 
     settings, 
+    boardState,
     submitted, 
     currentRow, 
     tileState, 
     correctState, 
     wrongState, 
     missedState, 
+    evaluations,
     visible 
   } from "./store"
   import Header from "./Header.svelte"
@@ -20,9 +24,11 @@
   import Keys from "./components/Keys.svelte"
   import Board from "./components/Board.svelte"
   import Toast from "./components/Toast.svelte"
+  import Modal from "./components/Modal.svelte"
 
   let showOverlay:boolean;
-  const guessRows = createGuessRows()
+  let showModal:boolean;
+  let guessRows = createGuessRows()
   
   let shake:boolean
   let message:string
@@ -32,10 +38,41 @@
   let pos = 0
   const maxLetter = 5
   const maxRow = 6
+  let root: HTMLElement;
 
+  evaluations.set((JSON.parse(localStorage.getItem("evaluations"))) || [null, null, null, null, null, null])
+	boardState.set((JSON.parse(localStorage.getItem("boardState")) as BoardState) || createBoardState())
 	settings.set((JSON.parse(localStorage.getItem("settings")) as Settings) || createDefaultSettings())
   const unsubscribe = settings.subscribe((s) => localStorage.setItem("settings", JSON.stringify(s)))
+  const unsubscribBoard = boardState.subscribe((b) => localStorage.setItem("boardState", JSON.stringify(b)))
+  const unsubsEval = evaluations.subscribe((s) => localStorage.setItem("evaluations", JSON.stringify(s)))
+
+  onMount(() => {
+		root = document.documentElement;
+	});
+
+	$: {
+		if (root) {
+      let row:number = JSON.parse(localStorage.getItem("rowIndex"))
+     
+      localStorage.setItem("settings", JSON.stringify($settings))
+      $settings.dark ? root.classList.add("dark") : root.classList.remove("dark")
+
+      if(!row) localStorage.setItem("rowIndex", JSON.stringify($currentRow))
+
+      if( row > 0) {
+        const board = JSON.parse(localStorage.getItem("boardState")).filter(i => i !== '')
+        for(let i = 0; i < board.length; i++){
+          guessRows[i] = board[i].split('')
+          $currentRow = row
+        }
+      }
+		}
+	}
+	
 	onDestroy(unsubscribe)
+  onDestroy(unsubscribBoard)
+  onDestroy(unsubsEval)
 
   const offsetFromDate = new Date('2022, 1, 17')
   var milliseconds = offsetFromDate.getTime();
@@ -43,6 +80,20 @@
   const dayOffset = msOffset / 1000 / 60 / 60 / 24
   const word = words.words[Math.floor(dayOffset)]
 
+  if($evaluations[0] !== null) {
+    const fil = $evaluations.filter(i => i !== null)
+    for(let i = 0; i < fil.length; i++) {
+      $tileState[i] = $evaluations[i]
+    }
+  }
+
+  // let titleShare = Katlo {#} {jumlahTebakan}/{jumlah Row}
+
+  const correct = '🟩'
+  const present = '🟨'
+  const absent = '⬜'
+
+  console.log(correct,absent,present)
 
   const handdleArray = (e) => {
     if(e.detail.toLowerCase() == 'enter') {
@@ -95,6 +146,8 @@
     }
 
     checkAnswer(guess)
+    const toStr = guessRows.map(i => i.join('').toLowerCase())
+    localStorage.setItem("boardState", JSON.stringify(toStr))
   }
 
   
@@ -138,14 +191,12 @@
         return { letter, wordmap }
     })
     
-
     for(let i = 0;i < 5; i++) {
-        if( $tileState[$currentRow][i] === 'missed') {
-          if(temp.includes(g[i].letter)) {
+        if($tileState[$currentRow][i] === 'missed' && temp.includes(g[i].letter)) {
             $tileState[$currentRow][i] = 'wrong'
-          } 
         }
     }
+    $evaluations[$currentRow] = $tileState[$currentRow]
     $submitted = true
     if(word === guess) {
       stop = true
@@ -169,6 +220,7 @@
 
   const nextRow = () => {
     let maximumAttempt = maxRow - 1
+    localStorage.setItem("rowIndex", JSON.stringify($currentRow + 1));
     if($currentRow > maximumAttempt) return
 
     $currentRow = $currentRow + 1
@@ -199,86 +251,76 @@
     />
   </section>
 </main>
-
+<Modal {showModal} on:click={() => showModal = false}>
+  <div slot="head">
+    <h3 class="modal-title">Statistik</h3>
+    <section class="statistic">
+        <article class="statistic__block">
+            <h4>1</h4>
+            <p>x Main</p>
+        </article>
+        <article class="statistic__block">
+            <h4>100</h4>
+            <p>% Menang</p>
+        </article>
+        <article class="statistic__block">
+            <h4>1</h4>
+            <p>Streak</p>
+        </article>
+        <article class="statistic__block">
+            <h4>1</h4>
+            <p>Max Streak</p>
+        </article>
+    </section>
+  </div>
+  <div slot="body">
+    <h3 class="modal-title">Sebaran Jawaban</h3>
+      <div class="graph-container">
+        <ul>
+            <li>
+                <div class="graph-number">1</div>
+                <div class="graph-track">
+                    <div class="graph-bar" style="width:7%;">0</div>
+                </div>
+            </li>
+            <li>
+                <div class="graph-number">2</div>
+                <div class="graph-track">
+                    <div class="graph-bar" style="width:7%;">0</div>
+                </div>
+            </li>
+            <li>
+                <div class="graph-number">3</div>
+                <div class="graph-track">
+                    <div class="graph-bar graph-bar--highlight" style="width:100%;justify-content:flex-end;padding-right:8px">0</div>
+                </div>
+            </li>
+            <li>
+                <div class="graph-number">4</div>
+                <div class="graph-track">
+                    <div class="graph-bar" style="width:7%;">0</div>
+                </div>
+            </li>
+            <li>
+                <div class="graph-number">5</div>
+                <div class="graph-track">
+                    <div class="graph-bar" style="width:7%;">0</div>
+                </div>
+            </li>
+            <li>
+                <div class="graph-number">6</div>
+                <div class="graph-track">
+                    <div class="graph-bar" style="width:7%;">0</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+  </div>
+</Modal>
 <Overlay {showOverlay} on:click={() => showOverlay = false} />
 
 <style>
-  :global(html, #app) {
-    height: 100%;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-  }
-  :global(:root) {
-    --green: #6aaa64;
-    --darkendGreen: #538d4e;
-    --yellow: #c9b458;
-    --darkendYellow: #b59f3b;
-    --lightGray: #d8d8d8;
-    --gray: #86888a;
-    --darkGray: #939598;
-    --white: #fff;
-    --black: #212121;
-    --orange: #f5793a;
-    --blue: #85c0f9;
-    --header-height: 50px;
-    --keyboard-height: 200px;
-    --game-max-width: 240px;
-    --color-tone-1: #000000;
-    --color-tone-2: #787c7e;
-    --color-tone-3: #878a8c;
-    --color-tone-4: #d3d6da;
-    --color-tone-5: #edeff1;
-    --color-tone-6: #f6f7f8;
-    --color-tone-7: #ffffff;
-    --color-nav-hover: #f4f4f4;
-    --opacity-50: rgba(255, 255, 255, 0.5);
-    --color-present: var(--yellow);
-    --color-correct: var(--green);
-    --color-absent: var(--color-tone-2);
-    --tile-text-color: var(--color-tone-7);
-    --key-text-color: var(--color-tone-1);
-    --key-evaluated-text-color: var(--color-tone-7);
-    --key-bg: var(--color-tone-4);
-    --key-bg-present: var(--color-present);
-    --key-bg-correct: var(--color-correct);
-    --key-bg-absent: var(--color-absent);
-    --modal-content-bg: var(--color-tone-7);
-    --icon-color: #565758;
-}
 
-:global(body) {
-  height: 100%;
-  background-color: var(--color-background);
-  margin: 0;
-  padding: 0;
-  overflow-y: hidden;
-}
-:global(.dark) {
-  --color-tone-1: #ffffff;
-    --color-tone-2: #818384;
-    --color-tone-3: #565758;
-    --color-tone-4: #3a3a3c;
-    --color-tone-5: #272729;
-    --color-tone-6: #1a1a1b;
-    --color-tone-7: #121213;
-    --color-nav-hover: #2f2f31;
-    --opacity-50: rgba(0, 0, 0, 0.5);
-  --color-present: var(--darkendYellow);
-    --color-correct: var(--darkendGreen);
-    --color-absent: var(--color-tone-4);
-    --tile-text-color: var(--color-tone-1);
-    --key-text-color: var(--color-tone-1);
-    --key-evaluated-text-color: var(--color-tone-1);
-    --key-bg: var(--color-tone-2);
-    --key-bg-present: var(--color-present);
-    --key-bg-correct: var(--color-correct);
-    --key-bg-absent: var(--color-absent);
-    --modal-content-bg: var(--color-tone-7);
-    --color-background: var(--color-tone-7);
-}
-:global(:root, .dark) {
-    --color-background: var(--color-tone-7);
-}
 #game {
   width: 100%;
   max-width: var(--game-max-width);
@@ -303,6 +345,58 @@
     width: 100%;
 }
 
+.statistic {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 80%;
+  margin: 0 auto;
+}
+.statistic__block p {
+  font-size: 12px;
+  text-align: center;
+}
+.modal-title {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 16px;
+}
+h4 {
+  font-size: 36px;
+  font-weight: 400;
+  text-align: center;
+  letter-spacing: 0.05em;
+  font-variant-numeric: proportional-nums;
+}
+
+.graph-container {
+  width: 80%;
+  margin: 0 auto;
+}
+.graph-container li {
+    display: flex;
+    font-size: 14px;
+    line-height: 20px;
+    margin-bottom: 6px;
+}
+.graph-track {
+    width: 100%;
+}
+.graph-bar {
+    font-weight: bold;
+    color: var(--tile-text-color);
+    background-color: var(--color-absent);
+    position: relative;
+    background-color: var(--color-absent);
+    display: flex;
+    justify-content: center;
+    margin-left: 4px;
+}
+.graph-bar--highlight {
+    background-color: var(--color-correct);
+}
 @media screen and (max-width: 767px) {
   #game {
     max-width: 90vw;

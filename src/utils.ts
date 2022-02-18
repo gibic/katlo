@@ -13,6 +13,14 @@ export function createDefaultSettings(): Settings {
 	}
 }
 
+export function createBoardState(): BoardState {
+	return {
+		boardState: ['', '', '', '', '', ''],
+	}
+}
+
+export const gameStatus:string = 'IN_PROGRESS'
+
 export function gameState() {
 	const s:string[][] = [
         ['', '', '', '', ''],
