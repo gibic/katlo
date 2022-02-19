@@ -1,253 +1,262 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { onDestroy } from 'svelte'
-  
-  import { 
-    createDefaultSettings, 
-    words, 
-    createGuessRows,
-    createBoardState,
-    createDefaultStats
-  } from "./utils"
-  import { 
-    settings, 
-    boardState,
-    submitted, 
-    currentRow, 
-    tileState, 
-    correctState, 
-    wrongState, 
-    missedState, 
-    evaluations,
-    visible 
-  } from "./store"
-  import Header from "./Header.svelte"
-  import Overlay from "./Overlay.svelte"
-  import Keys from "./components/Keys.svelte"
-  import Board from "./components/Board.svelte"
-  import Toast from "./components/Toast.svelte"
-  import Modal from "./components/Modal.svelte"
-  import Graph from "./components/Graph.svelte";
-  import Statistik from "./components/Statistik.svelte";
+import { onMount } from "svelte";
+import { onDestroy } from 'svelte'
+import { 
+  createDefaultSettings, 
+  words, 
+  createGuessRows,
+  createBoardState,
+  createDefaultStats
+} from "./utils"
+import { 
+  settings, 
+  boardState,
+  submitted, 
+  currentRow, 
+  tileState, 
+  correctState, 
+  wrongState, 
+  missedState, 
+  evaluations,
+  visible 
+} from "./store"
+import Header from "./Header.svelte"
+import Overlay from "./Overlay.svelte"
+import Keys from "./components/Keys.svelte"
+import Board from "./components/Board.svelte"
+import Toast from "./components/Toast.svelte"
+import Modal from "./components/Modal.svelte"
+import Graph from "./components/Graph.svelte";
+import Statistik from "./components/Statistik.svelte";
 
-  let showOverlay:boolean;
-  let showModal = false
-  let guessRows = createGuessRows()
+let showOverlay:boolean;
+let showModal = false
+let guessRows = createGuessRows()
+let stats: Stats;
+let shake:boolean
+let message:string
+let jumpy:boolean
+let stop = false
+let winModal = false
+let pos = 0
+const maxLetter = 5
+const maxRow = 6
+let guesses = 0;
+let root: HTMLElement;
 
-  let stats: Stats;
-  let shake:boolean
-  let message:string
-  let jumpy:boolean
-  let stop = false
+// let titleShare = Katlo {#} {jumlahTebakan}/{jumlah Row}
 
-  let pos = 0
-  const maxLetter = 5
-  const maxRow = 6
-  let root: HTMLElement;
+const correct = '🟩'
+const present = '🟨'
+const absent = '⬜'
 
-  evaluations.set((JSON.parse(localStorage.getItem("evaluations"))) || [null, null, null, null, null, null])
-	boardState.set((JSON.parse(localStorage.getItem("boardState")) as BoardState) || createBoardState())
-	settings.set((JSON.parse(localStorage.getItem("settings")) as Settings) || createDefaultSettings())
-  const unsubscribe = settings.subscribe((s) => localStorage.setItem("settings", JSON.stringify(s)))
-  const unsubscribBoard = boardState.subscribe((b) => localStorage.setItem("boardState", JSON.stringify(b)))
-  const unsubsEval = evaluations.subscribe((s) => localStorage.setItem("evaluations", JSON.stringify(s)))
+console.log(correct,absent,present)
 
-  stats = (JSON.parse(localStorage.getItem(`katlo-stats`)) as Stats) || createDefaultStats()
+evaluations.set((JSON.parse(localStorage.getItem("evaluations"))) || new Array(6).fill(null))
+boardState.set((JSON.parse(localStorage.getItem("boardState")) as BoardState) || createBoardState())
+settings.set((JSON.parse(localStorage.getItem("settings")) as Settings) || createDefaultSettings())
+const unsubscribe = settings.subscribe((s) => localStorage.setItem("settings", JSON.stringify(s)))
+const unsubscribBoard = boardState.subscribe((b) => localStorage.setItem("boardState", JSON.stringify(b)))
+const unsubsEval = evaluations.subscribe((s) => localStorage.setItem("evaluations", JSON.stringify(s)))
 
-  onMount(() => {
-		root = document.documentElement;
-	});
+stats = (JSON.parse(localStorage.getItem(`katlo-stats`)) as Stats) || createDefaultStats()
 
-	$: {
-		if (root) {
-      let row:number = JSON.parse(localStorage.getItem("rowIndex"))
-      localStorage.setItem('katlo-stats', JSON.stringify(stats))
-      localStorage.setItem("settings", JSON.stringify($settings))
-      $settings.dark ? root.classList.add("dark") : root.classList.remove("dark")
+onMount(() => {
+  root = document.documentElement;
+});
 
-      if(!row) localStorage.setItem("rowIndex", JSON.stringify($currentRow))
+$: {
+  if (root) {
+    let row:number = JSON.parse(localStorage.getItem("rowIndex"))
+    localStorage.setItem('katlo-stats', JSON.stringify(stats))
+    localStorage.setItem("settings", JSON.stringify($settings))
+    $settings.dark ? root.classList.add("dark") : root.classList.remove("dark")
 
-      if( row > 0) {
-        const board = JSON.parse(localStorage.getItem("boardState")).filter(i => i !== '')
-        for(let i = 0; i < board.length; i++){
-          guessRows[i] = board[i].split('')
-          $currentRow = row
-        }
+    if(!row) localStorage.setItem("rowIndex", JSON.stringify($currentRow))
+
+    if( row > 0) {
+      const board = JSON.parse(localStorage.getItem("boardState")).filter(i => i !== '')
+      for(let i = 0; i < board.length; i++){
+        guessRows[i] = board[i].split('')
+        $currentRow = row
       }
-		}
-	}
-	
-	onDestroy(unsubscribe)
-  onDestroy(unsubscribBoard)
-  onDestroy(unsubsEval)
-
-  const offsetFromDate = new Date('2022, 1, 17')
-  var milliseconds = offsetFromDate.getTime();
-  const msOffset = Date.now() - milliseconds
-  const dayOffset = msOffset / 1000 / 60 / 60 / 24
-  const word = words.words[Math.floor(dayOffset)]
-
-  if($evaluations[0] !== null) {
-    const fil = $evaluations.filter(i => i !== null)
-    for(let i = 0; i < fil.length; i++) {
-      $tileState[i] = $evaluations[i]
     }
   }
+}
+	
+onDestroy(() => {
+  unsubscribe
+  unsubscribBoard
+  unsubsEval
+})
 
-  // let titleShare = Katlo {#} {jumlahTebakan}/{jumlah Row}
+const offsetFromDate = new Date('2022, 1, 17')
+var milliseconds = offsetFromDate.getTime();
+const msOffset = Date.now() - milliseconds
+const dayOffset = msOffset / 1000 / 60 / 60 / 24
+const word = words.words[Math.floor(dayOffset)]
 
-  const correct = '🟩'
-  const present = '🟨'
-  const absent = '⬜'
+if($evaluations[0] !== null) {
+  const fil = $evaluations.filter(i => i !== null)
+  for(let i = 0; i < fil.length; i++) {
+    $tileState[i] = $evaluations[i]
+  }
+}
 
-  console.log(correct,absent,present)
+const handdleArray = (e) => {
+  if(e.detail.toLowerCase() == 'enter') {
+    shake = false
+    submitAnswer() 
+    return
+  }
+  updateArray(e.detail)
+}
 
-  const handdleArray = (e) => {
-    if(e.detail.toLowerCase() == 'enter') {
+const delKey = () => {
+  if (pos < 1) return
+  pos--
+  guessRows[$currentRow][pos] = ''
+}
+
+const handdlekeyDown = (e) => {
+  const letter = e.detail
+    if(letter.match(/^[a-z]$/)) {
+      updateArray(letter)
+      return
+    }
+    if(letter == 'Backspace' || letter == 'Delete') {
+      delKey() 
+      return
+    }
+    if(letter === 'Enter') {
       shake = false
       submitAnswer() 
       return
     }
-    updateArray(e.detail)
+}
+
+const submitAnswer = () => {
+  const guess = guessRows[$currentRow].join('').toLowerCase()
+  if($currentRow === maxRow) return
+
+  if(guessRows[$currentRow].includes('')) {
+    message = 'Jumlah huruf kurang'
+    $visible = true
+    return
   }
-
-  const delKey = () => {
-    if (pos < 1) return
-    pos--
-    guessRows[$currentRow][pos] = ''
-  }
-
-  const handdlekeyDown = (e) => {
-    const letter = e.detail
-      if(letter.match(/^[a-z]$/)) {
-        updateArray(letter)
-        return
-      }
-      if(letter == 'Backspace' || letter == 'Delete') {
-        delKey() 
-        return
-      }
-      if(letter === 'Enter') {
-        shake = false
-        submitAnswer() 
-        return
-      }
-  }
-
-  const submitAnswer = () => {
-    const guess = guessRows[$currentRow].join('').toLowerCase()
-    if($currentRow === maxRow) return
-
-    if(guessRows[$currentRow].includes('')) {
-      message = 'Jumlah huruf kurang'
-      $visible = true
-      return
-    }
-    
-    if(!words.valid.includes(guess)) {
-      shake = true
-      message = 'Word not on list'
-      $visible = true
-      return
-    }
-
-    checkAnswer(guess)
-    const toStr = guessRows.map(i => i.join('').toLowerCase())
-    localStorage.setItem("boardState", JSON.stringify(toStr))
-  }
-
   
-  const checkAnswer = (guess:string) => {
-    const date = new Date().getTime()
-    localStorage.setItem("lastPlayedTs", JSON.stringify(date) )
-    
-    let result = []
-    let minusOneStr = word
-    let solution = word
+  if(!words.valid.includes(guess)) {
+    shake = true
+    message = 'Word not on list'
+    $visible = true
+    return
+  }
 
-    for (let i = 0; i < guess.length; i++) {
-        let guessLetter = guess.charAt(i);
-        let solutionLetter = solution.charAt(i);
+  checkAnswer(guess)
+  const toStr = guessRows.map(i => i.join('').toLowerCase())
+  localStorage.setItem("boardState", JSON.stringify(toStr))
+}
 
-        if (guessLetter === solutionLetter) {
-          result.push("correct");
-          $correctState = [...$correctState, guessLetter]
-          if(i < 4) {
-                minusOneStr = minusOneStr.slice(0, minusOneStr.indexOf(guessLetter)) + minusOneStr.slice(minusOneStr.indexOf(guessLetter) + 1)
-          }
-        }
-        else if (minusOneStr.indexOf(guessLetter) != -1) {   
-          $missedState = [...$missedState, guessLetter] 
-          if(i < 4) {
-                minusOneStr = minusOneStr.slice(0, minusOneStr.indexOf(guessLetter)) + minusOneStr.slice(minusOneStr.indexOf(guessLetter) + 1)
-          }
-          result.push("missed");
-        }
-        else {
-          result.push("wrong");
-          $wrongState = [...$wrongState, guessLetter]
+const checkAnswer = (guess:string) => {
+  const date = new Date().getTime()
+  localStorage.setItem("lastPlayedTs", JSON.stringify(date) )
+  
+  let result = []
+  let minusOneStr = word
+  let solution = word
+
+  for (let i = 0; i < guess.length; i++) {
+      let guessLetter = guess.charAt(i);
+      let solutionLetter = solution.charAt(i);
+
+      if (guessLetter === solutionLetter) {
+        result.push("correct");
+        $correctState = [...$correctState, guessLetter]
+        if(i < 4) {
+              minusOneStr = minusOneStr.slice(0, minusOneStr.indexOf(guessLetter)) + minusOneStr.slice(minusOneStr.indexOf(guessLetter) + 1)
         }
       }
-
-      $tileState[$currentRow] = [...result]
-
-    let temp = []
-
-    const g = guess.split('').map((letter, index) => {
-        const wordmap = word.charAt(index)
-        if(wordmap === letter) temp.push(letter)
-        return { letter, wordmap }
-    })
-    
-    for(let i = 0;i < 5; i++) {
-        if($tileState[$currentRow][i] === 'missed' && temp.includes(g[i].letter)) {
-            $tileState[$currentRow][i] = 'wrong'
+      else if (minusOneStr.indexOf(guessLetter) != -1) {   
+        $missedState = [...$missedState, guessLetter] 
+        if(i < 4) {
+              minusOneStr = minusOneStr.slice(0, minusOneStr.indexOf(guessLetter)) + minusOneStr.slice(minusOneStr.indexOf(guessLetter) + 1)
         }
-    }
-    $evaluations[$currentRow] = $tileState[$currentRow]
-    $submitted = true
-
-    if(word === guess) {
-      stop = true
-      setTimeout(() => jumpy = true, 2200)
-      setTimeout(() => {
-        showModal = true
-      }, 2500)
-      localStorage.setItem("gameStatus", JSON.stringify('WIN'))
+        result.push("missed");
+      }
+      else {
+        result.push("wrong");
+        $wrongState = [...$wrongState, guessLetter]
+      }
     }
 
-    nextRow()
+    $tileState[$currentRow] = [...result]
+
+  let temp = []
+
+  const g = guess.split('').map((letter, index) => {
+      const wordmap = word.charAt(index)
+      if(wordmap === letter) temp.push(letter)
+      return { letter, wordmap }
+  })
+  
+  for(let i = 0;i < 5; i++) {
+      if($tileState[$currentRow][i] === 'missed' && temp.includes(g[i].letter)) {
+          $tileState[$currentRow][i] = 'wrong'
+      }
+  }
+  $evaluations[$currentRow] = $tileState[$currentRow]
+  $submitted = true
+
+  if(word === guess) {
+    stop = true
+    guesses = $currentRow
+    setTimeout(() => jumpy = true, 2200)
+    setTimeout(() => {
+      showModal = true
+      winModal = true
+    }, 2500)
+    localStorage.setItem("gameStatus", JSON.stringify('WIN'))
   }
 
-  const updateArray = (e:string) => {
-    shake = false
-    let max = pos
-    max++
+  nextRow()
+}
 
-    if(stop || $currentRow === maxRow) return
-    if(max > maxLetter && guessRows[$currentRow][maxLetter] !== '') return
+const updateArray = (e:string) => {
+  shake = false
+  let max = pos
+  max++
 
-    guessRows[$currentRow][pos] = e
-    pos++
+  if(stop || $currentRow === maxRow) return
+  if(max > maxLetter && guessRows[$currentRow][maxLetter] !== '') return
+
+  guessRows[$currentRow][pos] = e
+  pos++
+}
+
+const nextRow = () => {
+  let maximumAttempt = maxRow - 1
+  localStorage.setItem("rowIndex", JSON.stringify($currentRow + 1));
+  if($currentRow > maximumAttempt) {
+    return
   }
 
-  const nextRow = () => {
-    let maximumAttempt = maxRow - 1
-    localStorage.setItem("rowIndex", JSON.stringify($currentRow + 1));
-    if($currentRow > maximumAttempt) return
-
-    $currentRow = $currentRow + 1
-    pos = 0
-  }
+  $currentRow = $currentRow + 1
+  pos = 0
+}
 
 const modalClose = () => {
   showModal = false
-  console.log('clickes', showModal)
+}
+const handleOverlay = () => {
+  showOverlay = true
+}
+let handleWinModal = () => {
+  winModal = true
+  showModal = true
 }
 </script>
 
-
-<Header on:click={() => showOverlay = true} />
+<Header on:overlay={handleOverlay} on:launchwinModal={handleWinModal} />
 
 <main id="game">
   <section class="message-container">
@@ -268,18 +277,17 @@ const modalClose = () => {
     />
   </section>
 </main>
-<Modal {showModal} on:click={() => showModal = false} on:click={() => modalClose}>
+<Modal {showModal} on:click={modalClose}>
   <div slot="head">
-    <Statistik />
+    <Statistik {winModal} />
   </div>
   <div slot="body">
-    <Graph distribution={stats.guesses} guesses={$currentRow} />
+    <Graph {winModal} distribution={stats.guesses} guesses={guesses} />
   </div>
 </Modal>
 <Overlay {showOverlay} on:click={() => showOverlay = false} />
 
 <style>
-
 #game {
   width: 100%;
   max-width: var(--game-max-width);

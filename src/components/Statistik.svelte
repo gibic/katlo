@@ -1,3 +1,7 @@
+<script lang="ts">
+    export let winModal = false
+</script>
+{#if winModal}
 <h3 class="modal-title">Statistik</h3>
 <section class="statistic">
     <article class="statistic__block">
@@ -17,6 +21,7 @@
         <p>Max Streak</p>
     </article>
 </section>
+{/if}
 <style>
 .statistic {
   display: grid;
