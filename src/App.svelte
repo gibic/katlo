@@ -41,7 +41,6 @@ let winModal = false
 let pos = 0
 const maxLetter = 5
 const maxRow = 6
-let guesses = 0;
 let root: HTMLElement;
 
 // let titleShare = Katlo {#} {jumlahTebakan}/{jumlah Row}
@@ -60,18 +59,28 @@ const unsubscribBoard = boardState.subscribe((b) => localStorage.setItem("boardS
 const unsubsEval = evaluations.subscribe((s) => localStorage.setItem("evaluations", JSON.stringify(s)))
 
 stats = (JSON.parse(localStorage.getItem(`katlo-stats`)) as Stats) || createDefaultStats()
+let status = JSON.parse(localStorage.getItem("gameStatus"))
+if(!status) localStorage.setItem("gameStatus", JSON.stringify('IN_PROGRESS'))
+let IN_PROGRESS = status === "IN_PROGRESS"
+
+if(!IN_PROGRESS) {
+  setTimeout(() => {
+    showModal = true
+    winModal = true
+  }, 1000)
+}
 
 onMount(() => {
   root = document.documentElement;
 });
 
+let guesses = stats.guesses[$currentRow];
+
 $: {
   if (root) {
-    let row:number = JSON.parse(localStorage.getItem("rowIndex"))
-    localStorage.setItem('katlo-stats', JSON.stringify(stats))
     localStorage.setItem("settings", JSON.stringify($settings))
     $settings.dark ? root.classList.add("dark") : root.classList.remove("dark")
-
+    const row = JSON.parse(localStorage.getItem("rowIndex"))
     if(!row) localStorage.setItem("rowIndex", JSON.stringify($currentRow))
 
     if( row > 0) {
@@ -104,6 +113,7 @@ if($evaluations[0] !== null) {
 }
 
 const handdleArray = (e) => {
+  if(!IN_PROGRESS) return
   if(e.detail.toLowerCase() == 'enter') {
     shake = false
     submitAnswer() 
@@ -119,6 +129,7 @@ const delKey = () => {
 }
 
 const handdlekeyDown = (e) => {
+  if(!IN_PROGRESS) return
   const letter = e.detail
     if(letter.match(/^[a-z]$/)) {
       updateArray(letter)
@@ -208,8 +219,8 @@ const checkAnswer = (guess:string) => {
   $submitted = true
 
   if(word === guess) {
-    stop = true
-    guesses = $currentRow
+    stats.guesses[$currentRow + 1] = stats.guesses[$currentRow + 1] + 1
+    localStorage.setItem('katlo-stats', JSON.stringify(stats))
     setTimeout(() => jumpy = true, 2200)
     setTimeout(() => {
       showModal = true
@@ -225,8 +236,8 @@ const updateArray = (e:string) => {
   shake = false
   let max = pos
   max++
-
-  if(stop || $currentRow === maxRow) return
+  if(!IN_PROGRESS) return
+  if($currentRow === maxRow) return
   if(max > maxLetter && guessRows[$currentRow][maxLetter] !== '') return
 
   guessRows[$currentRow][pos] = e

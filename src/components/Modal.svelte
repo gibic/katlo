@@ -109,6 +109,7 @@ $: if(showModal) {
     margin: 24px 0;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
 }
 h6.modal-footer-title {
   font-weight: 700;
@@ -119,7 +120,7 @@ h6.modal-footer-title {
   margin-bottom: 0;
 }
 .clock {
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 400;
     display: flex;
     align-items: center;
@@ -154,5 +155,7 @@ h6.modal-footer-title {
 .footer-left h5 {
     font-weight: 700;
     text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: .1ch;
 }
 </style>

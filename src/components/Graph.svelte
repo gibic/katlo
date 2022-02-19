@@ -18,9 +18,9 @@
                 <div class="graph-track">
                     <div class="graph-bar" 
                         class:graph-bar--highlight={parseInt(guess[0]) === guesses}
-                        style="width: {parseInt(guess[0]) === guesses ? (guess[1] / max) * 100 : 5}%;
-                        justify-content:{parseInt(guess[0]) === guesses ? 'flex-end' : 'flex-start'};
-                        padding:{parseInt(guess[0]) === guesses ? '0 8px 0 0' : '0 0 0 8px'};">
+                        style="width: {guess[1] > 0 ? (guess[1] / max) * 100 : 5}%;
+                        justify-content:{guess[1] > 0 ? 'flex-end' : 'flex-start'};
+                        padding:{guess[1] > 0 ? '0 8px 0 0' : '0 0 0 8px'};">
                         {guess[1]}
                     </div>
                 </div>
