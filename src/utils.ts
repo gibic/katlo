@@ -45,3 +45,24 @@ export function createGuessRows() {
 
 	return t
 }
+
+export function createDefaultStats(): Stats {
+	const stats = {
+		played: 0,
+		lastGame: 0,
+		guesses: {
+			fail: 0,
+			1: 0,
+			2: 0,
+			3: 0,
+			4: 0,
+			5: 0,
+			6: 0,
+		}
+	};
+	return {
+		...stats,
+		streak: 0,
+		maxStreak: 0,
+	};
+};

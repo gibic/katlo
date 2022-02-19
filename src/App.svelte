@@ -1,11 +1,13 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { onDestroy } from 'svelte'
+  
   import { 
     createDefaultSettings, 
     words, 
     createGuessRows,
     createBoardState,
+    createDefaultStats
   } from "./utils"
   import { 
     settings, 
@@ -25,11 +27,14 @@
   import Board from "./components/Board.svelte"
   import Toast from "./components/Toast.svelte"
   import Modal from "./components/Modal.svelte"
+  import Graph from "./components/Graph.svelte";
+  import Statistik from "./components/Statistik.svelte";
 
   let showOverlay:boolean;
-  let showModal:boolean;
+  let showModal = false
   let guessRows = createGuessRows()
-  
+
+  let stats: Stats;
   let shake:boolean
   let message:string
   let jumpy:boolean
@@ -47,6 +52,8 @@
   const unsubscribBoard = boardState.subscribe((b) => localStorage.setItem("boardState", JSON.stringify(b)))
   const unsubsEval = evaluations.subscribe((s) => localStorage.setItem("evaluations", JSON.stringify(s)))
 
+  stats = (JSON.parse(localStorage.getItem(`katlo-stats`)) as Stats) || createDefaultStats()
+
   onMount(() => {
 		root = document.documentElement;
 	});
@@ -54,7 +61,7 @@
 	$: {
 		if (root) {
       let row:number = JSON.parse(localStorage.getItem("rowIndex"))
-     
+      localStorage.setItem('katlo-stats', JSON.stringify(stats))
       localStorage.setItem("settings", JSON.stringify($settings))
       $settings.dark ? root.classList.add("dark") : root.classList.remove("dark")
 
@@ -129,7 +136,6 @@
 
   const submitAnswer = () => {
     const guess = guessRows[$currentRow].join('').toLowerCase()
-    
     if($currentRow === maxRow) return
 
     if(guessRows[$currentRow].includes('')) {
@@ -152,7 +158,9 @@
 
   
   const checkAnswer = (guess:string) => {
-
+    const date = new Date().getTime()
+    localStorage.setItem("lastPlayedTs", JSON.stringify(date) )
+    
     let result = []
     let minusOneStr = word
     let solution = word
@@ -198,9 +206,14 @@
     }
     $evaluations[$currentRow] = $tileState[$currentRow]
     $submitted = true
+
     if(word === guess) {
       stop = true
       setTimeout(() => jumpy = true, 2200)
+      setTimeout(() => {
+        showModal = true
+      }, 2500)
+      localStorage.setItem("gameStatus", JSON.stringify('WIN'))
     }
 
     nextRow()
@@ -227,6 +240,10 @@
     pos = 0
   }
 
+const modalClose = () => {
+  showModal = false
+  console.log('clickes', showModal)
+}
 </script>
 
 
@@ -251,70 +268,12 @@
     />
   </section>
 </main>
-<Modal {showModal} on:click={() => showModal = false}>
+<Modal {showModal} on:click={() => showModal = false} on:click={() => modalClose}>
   <div slot="head">
-    <h3 class="modal-title">Statistik</h3>
-    <section class="statistic">
-        <article class="statistic__block">
-            <h4>1</h4>
-            <p>x Main</p>
-        </article>
-        <article class="statistic__block">
-            <h4>100</h4>
-            <p>% Menang</p>
-        </article>
-        <article class="statistic__block">
-            <h4>1</h4>
-            <p>Streak</p>
-        </article>
-        <article class="statistic__block">
-            <h4>1</h4>
-            <p>Max Streak</p>
-        </article>
-    </section>
+    <Statistik />
   </div>
   <div slot="body">
-    <h3 class="modal-title">Sebaran Jawaban</h3>
-      <div class="graph-container">
-        <ul>
-            <li>
-                <div class="graph-number">1</div>
-                <div class="graph-track">
-                    <div class="graph-bar" style="width:7%;">0</div>
-                </div>
-            </li>
-            <li>
-                <div class="graph-number">2</div>
-                <div class="graph-track">
-                    <div class="graph-bar" style="width:7%;">0</div>
-                </div>
-            </li>
-            <li>
-                <div class="graph-number">3</div>
-                <div class="graph-track">
-                    <div class="graph-bar graph-bar--highlight" style="width:100%;justify-content:flex-end;padding-right:8px">0</div>
-                </div>
-            </li>
-            <li>
-                <div class="graph-number">4</div>
-                <div class="graph-track">
-                    <div class="graph-bar" style="width:7%;">0</div>
-                </div>
-            </li>
-            <li>
-                <div class="graph-number">5</div>
-                <div class="graph-track">
-                    <div class="graph-bar" style="width:7%;">0</div>
-                </div>
-            </li>
-            <li>
-                <div class="graph-number">6</div>
-                <div class="graph-track">
-                    <div class="graph-bar" style="width:7%;">0</div>
-                </div>
-            </li>
-        </ul>
-    </div>
+    <Graph distribution={stats.guesses} guesses={$currentRow} />
   </div>
 </Modal>
 <Overlay {showOverlay} on:click={() => showOverlay = false} />
@@ -345,58 +304,6 @@
     width: 100%;
 }
 
-.statistic {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  width: 80%;
-  margin: 0 auto;
-}
-.statistic__block p {
-  font-size: 12px;
-  text-align: center;
-}
-.modal-title {
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  text-align: center;
-  margin-bottom: 16px;
-}
-h4 {
-  font-size: 36px;
-  font-weight: 400;
-  text-align: center;
-  letter-spacing: 0.05em;
-  font-variant-numeric: proportional-nums;
-}
-
-.graph-container {
-  width: 80%;
-  margin: 0 auto;
-}
-.graph-container li {
-    display: flex;
-    font-size: 14px;
-    line-height: 20px;
-    margin-bottom: 6px;
-}
-.graph-track {
-    width: 100%;
-}
-.graph-bar {
-    font-weight: bold;
-    color: var(--tile-text-color);
-    background-color: var(--color-absent);
-    position: relative;
-    background-color: var(--color-absent);
-    display: flex;
-    justify-content: center;
-    margin-left: 4px;
-}
-.graph-bar--highlight {
-    background-color: var(--color-correct);
-}
 @media screen and (max-width: 767px) {
   #game {
     max-width: 90vw;

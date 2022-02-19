@@ -53,36 +53,36 @@
     </button>
 </div>
 <style>
-    .row {
-        display: grid;
-        gap: .5em;
-        grid-template-columns:repeat(20, 1.1em);
-        grid-auto-rows: 3.2em;
-        justify-content: center;
-        max-width: var(--game-max-width);
-    }
+.row {
+    display: grid;
+    gap: .5em;
+    grid-template-columns:repeat(20, 1.1em);
+    grid-auto-rows: 3.2em;
+    justify-content: center;
+    max-width: var(--game-max-width);
+}
 
-    button {
-        font-size: .80rem;
-        grid-column: span 2;
-        cursor: pointer;
-        user-select: none;
-        background-color: var(--key-bg);
-        color: var(--key-text-color);
-        border: none;
-        padding: 0;
-        font-weight: bold;
-        border-radius: .25em;
-    }
+button {
+    font-size: .80rem;
+    grid-column: span 2;
+    cursor: pointer;
+    user-select: none;
+    background-color: var(--key-bg);
+    color: var(--key-text-color);
+    border: none;
+    padding: 0;
+    font-weight: bold;
+    border-radius: .25em;
+}
 
-    button:nth-child(11) {
-        grid-column: 2 / 4;
-    }
+button:nth-child(11) {
+    grid-column: 2 / 4;
+}
 
-    button:nth-child(20),
-    button:nth-child(28) {
-        grid-column: span 3;
-    }
+button:nth-child(20),
+button:nth-child(28) {
+    grid-column: span 3;
+}
 
 .correct {
     background-color: var(--color-correct) !important;
