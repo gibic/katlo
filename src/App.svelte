@@ -86,7 +86,7 @@ $: {
         welcomeModal = true
       }, 500)
     }
-    
+    console.log(date, todayGame)
     if(($gameStatus !== "IN_PROGRESS") && (date < todayGame)) {
       $gameStatus = "IN_PROGRESS" 
       $evaluations = new Array(6).fill(null)
