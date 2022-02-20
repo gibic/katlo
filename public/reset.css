@@ -124,3 +124,6 @@ body {
 :root, .dark {
     --color-background: var(--color-tone-7);
 }
+strong {
+  font-weight: 700;
+}

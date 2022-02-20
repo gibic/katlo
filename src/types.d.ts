@@ -23,7 +23,7 @@ type ToastModal = {
 	modalDelay:number, 
 	toastDelay:number, 
 	gameResult:string, 
-	winstatus:string
+	winstatus:number
 }
 type Guesses = {
 	"1": number;

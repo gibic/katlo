@@ -46,6 +46,29 @@ export function createGuessRows() {
 	return t
 }
 
+export const toastModal:ToastModal = {
+	m: '', 
+	speed: 0, 
+	row: 0, 
+	modalDelay: 0, 
+	toastDelay: 0, 
+	gameResult: '', 
+	winstatus: 0
+}
+
+export const correct = '🟩'
+export const present = '🟨'
+export const absent = '⬜'
+
+export const apreciation:String[] = [
+	'Panjenengan pancen 👍',
+	'Sangar, lur!',
+	'Top tenan',
+	'Sekecaaken Mawon, lur :)',
+	'Sithik meneh',
+	'Meh wae...',
+]
+
 export function createDefaultStats(): Stats {
 	const stats = {
 		played: 0,

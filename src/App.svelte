@@ -6,7 +6,12 @@ import {
   words, 
   createGuessRows,
   createBoardState,
-  createDefaultStats
+  createDefaultStats,
+  toastModal,
+  apreciation,
+  correct,
+  present,
+  absent
 } from "./utils"
 import { 
   settings, 
@@ -74,6 +79,14 @@ $: {
         $currentRow = row
       }
     }
+    if(stats.played === 0 && row === 0) {
+      setTimeout(() => {
+        showModal = true
+        winModal = false
+        welcomeModal = true
+      }, 500)
+    }
+
   }
 }
 	
@@ -99,7 +112,7 @@ if($visible === false && (statusOnLoad === "WIN" || statusOnLoad === "FAIL")) {
 }
 
 const date = new Date(localStorage.getItem("lastPlayedTs"))
-
+let welcomeModal = false
 function getMidnight(day:Date){
   const date = new Date(day);
   date.setMilliseconds(999);
@@ -119,13 +132,36 @@ function isNewDay(date){
 $: if($gameStatus !== "IN_PROGRESS") {
   isNewDay(date) ? $gameStatus = "IN_PROGRESS" : console.log('Waiting for new word')
 }
-// let titleShare = `Katlo ${Math.floor(dayOffset)} ${JSON.parse(localStorage.getItem('rowIndex'))}/6`
 
-const correct = '🟩'
-const present = '🟨'
-const absent = '⬜'
+const share = () => {
+  let countTitle = 'x'
+  $gameStatus === 'WIN' ? countTitle = JSON.parse(localStorage.getItem('rowIndex')) : countTitle = 'x'
 
-// console.log(titleShare, correct,absent,present, $currentRow)
+  let titleShare = `Katlo ${Math.floor(dateIndex(gameBeginning, today))} ${countTitle}/6`
+
+  let tileShare = $evaluations.filter(i => i !== null)
+  for(let k = 0;k < tileShare.length;k++){
+    tileShare[k] = tileShare[k].join('')
+    .replace(/correct/g, correct)
+    .replace(/missed/g, present)
+    .replace(/wrong/g, absent)
+  }
+  const tileToShare = tileShare.toString().replace(/\s]/g,"").replace(/[,]/g,"\n")
+  const urlToShare = 'https://katlo.vercel.app'
+
+  navigator.clipboard.writeText(titleShare + '\n' + tileToShare + '\n' + urlToShare).then(
+      () => {
+        $visible = true
+        message = 'Berhasil di-copy'
+      },
+      () => {
+        $visible = true
+        message = 'Gagal di-copy'
+      }
+  );
+}
+
+
 
 if($evaluations[0] !== null) {
   const fil = $evaluations.filter(i => i !== null)
@@ -239,48 +275,60 @@ const checkAnswer = (guess:string) => {
 
   if(katlo(today) === guess) {
     setTimeout(() => jumpy = true, 2200)
-    const m = "Panjenengan pancen 👍"
-    const speed = 2000
-    const row = $currentRow + 1
-    const modalDelay = 5000
-    const toastDelay = 3500
-    const gameResult = "WIN"
-    const winstatus = 1
-    updateStatus(m, speed, row, modalDelay, toastDelay, gameResult, winstatus)
+    toastModal.m = apreciation[$currentRow].toString()
+    toastModal.speed = 2000
+    toastModal.row = $currentRow + 1
+    toastModal.modalDelay = 5000
+    toastModal.toastDelay = 3500
+    toastModal.gameResult = "WIN"
+    toastModal.winstatus = 1
+    updateStatus(toastModal)
   }
 
   if($currentRow === 5 && katlo(today) !== guess) {
-    const m = katlo(today).toUpperCase()
-    const speed = 2000
-    const row = $currentRow + 1
-    const modalDelay = 3000
-    const toastDelay = 2000
-    const gameResult = "FAIL"
-    const winstatus = 0
-    updateStatus(m, speed, row, modalDelay, toastDelay, gameResult, winstatus)
+    toastModal.m = katlo(today).toUpperCase()
+    toastModal.speed = 2000
+    toastModal.row = $currentRow + 1
+    toastModal.modalDelay = 3000
+    toastModal.toastDelay = 2000
+    toastModal.gameResult = "FAIL"
+    toastModal.winstatus = 0
+    updateStatus(toastModal)
   }
 
   nextRow()
 }
 
-const updateStatus = (m:string, s:number, r:number, d:number, t:number, g:string, q:number) => {
+const updateStatus = (i:ToastModal) => {
   setTimeout(() => {
       $visible = true 
-      delay = s
-      message = m
-  }, t)
+      delay = i.speed
+      message = i.m
+  }, i.toastDelay)
     
   stats.played = Number(stats.played) + 1
-  stats.gamesWon = Number(stats.gamesWon) + q
-  stats.guesses[r] = stats.guesses[r] + q
+  stats.gamesWon = Number(stats.gamesWon) + i.winstatus
+  stats.guesses[i.row] = stats.guesses[i.row] + i.winstatus
+
+  if(i.winstatus === 0) {
+    stats.streak = 0 
+    stats.guesses.fail = Number(stats.guesses.fail) + 1
+  } else {
+    stats.streak = Number(stats.streak) + i.winstatus
+  }
+
+  if(stats.streak > stats.maxStreak) {
+    stats.maxStreak = Number(stats.streak)
+  }
+
   localStorage.setItem('katlo-stats', JSON.stringify(stats))
   localStorage.setItem("lastPlayedTs", JSON.stringify(new Date().getTime()) )
 
   setTimeout(() => {
     showModal = true
     winModal = true
-  }, d)
-  $gameStatus = g
+  }, i.modalDelay)
+  $gameStatus = i.gameResult
 }
 
 const updateArray = (e:string) => {
@@ -316,9 +364,14 @@ let handleWinModal = () => {
   winModal = true
   showModal = true
 }
+let handleWelcomeModal = () => {
+  winModal = false
+  showModal = true
+  welcomeModal = true
+}
 </script>
 
-<Header on:overlay={handleOverlay} on:launchwinModal={handleWinModal} />
+<Header on:overlay={handleOverlay} on:launchwinModal={handleWinModal} on:launchwelcomeModal={handleWelcomeModal} />
 
 <main id="game">
   <section class="message-container">
@@ -339,14 +392,61 @@ let handleWinModal = () => {
     />
   </section>
 </main>
-<Modal {showModal} on:click={modalClose}>
+<Modal {showModal} {stats} on:click={modalClose} on:share={share}>
   <div slot="head">
     <Statistik {winModal} />
   </div>
   <div slot="body">
-    <Graph {winModal} distribution={stats.guesses} />
+    <Graph {winModal} {stats} distribution={stats.guesses} />
   </div>
 </Modal>
+{#if welcomeModal && !winModal}
+<Modal {showModal} on:click={modalClose}>
+  <div slot="head">
+      <h2 class="how-to-title">Cara Main</h2>
+  </div>
+  <div slot="body">
+      <p>Tebak kata Bahasa Jawa dalam 6 kali percobaan.</p>
+      <br>
+      <p>Tiap tebakan adalah kata dalam Bahasa Jawa yang terdiri atas 5 huruf. </p>
+      <br>
+      <p>Sehabis menebak, tiap kotak akan berganti warna untuk memberi petunjuk, huruf mana yang letaknya tepat, meleset, atau keliru.</p>
+      <div class="separator"></div>
+      <h3><strong>Contoh</strong></h3>
+      <div class="holder">
+        <div class="tile correct">A</div>
+        <div class="tile">B</div>
+        <div class="tile">A</div>
+        <div class="tile">N</div>
+        <div class="tile">G</div>
+      </div>
+      <p>Huruf <strong>A</strong> ada, dan letaknya tepat.</p>
+      <br>
+      <div class="holder">
+        <div class="tile">M</div>
+        <div class="tile">A</div>
+        <div class="tile missed">N</div>
+        <div class="tile">U</div>
+        <div class="tile">K</div>
+      </div>
+      <p>Huruf <strong>N</strong> ada, tapi letaknya keliru.</p>
+      <br>
+      <div class="holder">
+        <div class="tile">W</div>
+        <div class="tile">A</div>
+        <div class="tile">J</div>
+        <div class="tile">I</div>
+        <div class="tile wrong">K</div>
+      </div>
+      <p>Huruf <strong>K</strong> tidak ada di dalam kata.</p>
+      <br><br>
+      <p><strong>N.B:</strong> Perbendaharaan kata Bahasa Jawa di <em>game</em> ini masih sangat minim. Silakan <a href="https://twitter.com/ginseladipura" target="_blank">hubungi kami</a> jika kawan-kawan ingin menambahkan kata untuk dipasang di permainan ini.</p>
+  </div>
+  <div slot="footer">
+    <p>&nbsp;</p>
+  </div>
+</Modal>
+{/if}
 <Overlay {showOverlay} on:click={() => showOverlay = false} />
 
 <style>
@@ -373,7 +473,56 @@ let handleWinModal = () => {
     min-height: 290px;
     width: 100%;
 }
+.how-to-title {
+  text-transform: uppercase;
+  font-weight: 700;
+}
+p {
+  font-size: 14px;
+  color: var(--color-tone-1);
+  line-height: 1.25;
+  letter-spacing: .08rem;
+  font-weight: 400;
+}
+.separator {
+  margin: 2rem 0;
+  border-bottom: 1px solid var(--color-tone-2);
+}
+.holder {
+  width: 300px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-auto-rows: 50px;
+  gap:3px;
+  margin: 1rem 0;
+}
+.tile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--color-tone-7);
+  border: 2px solid var(--color-tone-3);
+  color: var(--color-tone-1);
+  font-weight: 700;
+}
+.correct {
+  background-color: var(--color-correct);
+  border: none;
+}
 
+.missed {
+  background-color: var(--yellow);
+  border: none;
+}
+
+.wrong {
+  background-color: var(--color-absent);
+  border: none;
+}
+
+a {
+  color: inherit
+}
 @media screen and (max-width: 767px) {
   #game {
     max-width: 90vw;

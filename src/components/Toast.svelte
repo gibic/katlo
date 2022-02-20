@@ -20,7 +20,7 @@
     top: 100px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 1;
+    z-index: 5000;
     font-weight: 700;
 }
 </style>

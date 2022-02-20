@@ -1,13 +1,14 @@
 <script lang="ts">
 	export let distribution: Guesses;
     export let winModal = false
-	
+	export let stats = undefined
 	$: max = Math.max(...Object.values(distribution));
 </script>
 {#if winModal}
 <div>
     <h3 class="modal-title">Sebaran Jawaban</h3>
     <div class="graph-container">
+    {#if stats.played !== 0}
       <ul>
         {#each Object.entries(distribution) as guess, i (guess[0])}
             {#if !isNaN(parseInt(guess[0]))}
@@ -26,6 +27,11 @@
             {/if}
         {/each}
       </ul>
+      {:else}
+      <div style="width:100%;text-align:center;margin: 12px 0;">
+        <p>Belum ada data</p>
+      </div>
+    {/if}
   </div>
 </div>
 {/if}

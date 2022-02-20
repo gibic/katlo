@@ -2,6 +2,7 @@
   export let winModal = false
 
   const obj = JSON.parse(localStorage.getItem('katlo-stats'))
+  $: percent = Number(obj.gamesWon) / Number(obj.played) * 100
 </script>
 {#if winModal}
 <h3 class="modal-title">Statistik</h3>
@@ -11,15 +12,15 @@
         <p>x Main</p>
     </article>
     <article class="statistic__block">
-        <h4>{Number(obj.gamesWon) / Number(obj.played) * 100}</h4>
+        <h4>{isNaN(percent) ? 0 : percent}</h4>
         <p>% Menang</p>
     </article>
     <article class="statistic__block">
-        <h4>1</h4>
+        <h4>{obj.streak}</h4>
         <p>Streak</p>
     </article>
     <article class="statistic__block">
-        <h4>1</h4>
+        <h4>{obj.maxStreak}</h4>
         <p>Max Streak</p>
     </article>
 </section>
