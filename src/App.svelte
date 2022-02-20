@@ -87,7 +87,7 @@ $: {
       }, 500)
     }
 
-    if(($gameStatus !== "IN_PROGRESS") && (date.setHours(0, 0, 0, 0) > todayGame.setHours(0, 0, 0, 0))) {
+    if(($gameStatus !== "IN_PROGRESS") && (date.setHours(0, 0, 0, 0) < todayGame.setHours(0, 0, 0, 0))) {
       $gameStatus = "IN_PROGRESS" 
       $evaluations = new Array(6).fill(null)
       $boardState = createBoardState()
@@ -125,21 +125,6 @@ if($visible === false && (statusOnLoad === "WIN" || statusOnLoad === "FAIL")) {
 const todayGame = new Date() 
 const date = new Date(localStorage.getItem("lastPlayedTs"))
 let welcomeModal = false
-function getMidnight(day:Date){
-  const date = new Date(day);
-  date.setMilliseconds(999);
-  date.setSeconds(59);
-  date.setMinutes(59);
-  date.setHours(23);
-  return date;
-}
-
-function isNewDay(date){
-  const midnightTonight = getMidnight(new Date());
-  const midnightTomorrow = new Date(midnightTonight.getTime() + 864e5);
-
-  return date > midnightTonight && date < midnightTomorrow;
-}
 
 const share = () => {
   let countTitle = 'x'
