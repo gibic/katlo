@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let guesses = 0;
 	export let distribution: Guesses;
     export let winModal = false
 	
@@ -12,12 +11,11 @@
       <ul>
         {#each Object.entries(distribution) as guess, i (guess[0])}
             {#if !isNaN(parseInt(guess[0]))}
-            
             <li>
                 <div class="graph-number">{guess[0]}</div>
                 <div class="graph-track">
                     <div class="graph-bar" 
-                        class:graph-bar--highlight={parseInt(guess[0]) === guesses}
+                        class:graph-bar--highlight={guess[1] === max && guess[1] !== 0 }
                         style="width: {guess[1] > 0 ? (guess[1] / max) * 100 : 5}%;
                         justify-content:{guess[1] > 0 ? 'flex-end' : 'flex-start'};
                         padding:{guess[1] > 0 ? '0 8px 0 0' : '0 0 0 8px'};">

@@ -18,7 +18,8 @@ import {
   wrongState, 
   missedState, 
   evaluations,
-  visible 
+  visible,
+  gameStatus
 } from "./store"
 import Header from "./Header.svelte"
 import Overlay from "./Overlay.svelte"
@@ -36,55 +37,38 @@ let stats: Stats;
 let shake:boolean
 let message:string
 let jumpy:boolean
-let stop = false
 let winModal = false
 let pos = 0
+let delay:number
 const maxLetter = 5
 const maxRow = 6
 let root: HTMLElement;
 
-// let titleShare = Katlo {#} {jumlahTebakan}/{jumlah Row}
-
-const correct = '🟩'
-const present = '🟨'
-const absent = '⬜'
-
-console.log(correct,absent,present)
-
+gameStatus.set(JSON.parse(localStorage.getItem("gameStatus")) || "IN_PROGRESS")
 evaluations.set((JSON.parse(localStorage.getItem("evaluations"))) || new Array(6).fill(null))
 boardState.set((JSON.parse(localStorage.getItem("boardState")) as BoardState) || createBoardState())
 settings.set((JSON.parse(localStorage.getItem("settings")) as Settings) || createDefaultSettings())
 const unsubscribe = settings.subscribe((s) => localStorage.setItem("settings", JSON.stringify(s)))
 const unsubscribBoard = boardState.subscribe((b) => localStorage.setItem("boardState", JSON.stringify(b)))
 const unsubsEval = evaluations.subscribe((s) => localStorage.setItem("evaluations", JSON.stringify(s)))
+const unsubStatus = gameStatus.subscribe((g) => localStorage.setItem("gameStatus", JSON.stringify(g)))
 
 stats = (JSON.parse(localStorage.getItem(`katlo-stats`)) as Stats) || createDefaultStats()
-let status = JSON.parse(localStorage.getItem("gameStatus"))
-if(!status) localStorage.setItem("gameStatus", JSON.stringify('IN_PROGRESS'))
-let IN_PROGRESS = status === "IN_PROGRESS"
-
-if(!IN_PROGRESS) {
-  setTimeout(() => {
-    showModal = true
-    winModal = true
-  }, 1000)
-}
 
 onMount(() => {
   root = document.documentElement;
 });
 
-let guesses = stats.guesses[$currentRow];
-
 $: {
   if (root) {
+    localStorage.setItem('katlo-stats', JSON.stringify(stats))
     localStorage.setItem("settings", JSON.stringify($settings))
     $settings.dark ? root.classList.add("dark") : root.classList.remove("dark")
     const row = JSON.parse(localStorage.getItem("rowIndex"))
     if(!row) localStorage.setItem("rowIndex", JSON.stringify($currentRow))
 
     if( row > 0) {
-      const board = JSON.parse(localStorage.getItem("boardState")).filter(i => i !== '')
+      const board = JSON.parse(localStorage.getItem("boardState")).filter((i:string) => i !== '')
       for(let i = 0; i < board.length; i++){
         guessRows[i] = board[i].split('')
         $currentRow = row
@@ -97,13 +81,51 @@ onDestroy(() => {
   unsubscribe
   unsubscribBoard
   unsubsEval
+  unsubStatus
 })
 
-const offsetFromDate = new Date('2022, 1, 17')
-var milliseconds = offsetFromDate.getTime();
-const msOffset = Date.now() - milliseconds
-const dayOffset = msOffset / 1000 / 60 / 60 / 24
-const word = words.words[Math.floor(dayOffset)]
+const IN_PROGRESS = $gameStatus === "IN_PROGRESS"
+const today = new Date()
+const gameBeginning = new Date('2022, 2, 14').setHours(0, 0, 0, 0);
+const dateIndex = (beginning, date) => Math.round((date.setHours(0, 0, 0, 0) - beginning) / 864e5)
+const katlo = (date:Date) => words.words[dateIndex(gameBeginning, date) % words.words.length];
+
+const statusOnLoad = JSON.parse(localStorage.getItem("gameStatus"))
+if($visible === false && (statusOnLoad === "WIN" || statusOnLoad === "FAIL")) {
+  setTimeout(() => {
+    showModal = true
+    winModal = true
+  }, 1500)
+}
+
+const date = new Date(localStorage.getItem("lastPlayedTs"))
+
+function getMidnight(day:Date){
+  const date = new Date(day);
+  date.setMilliseconds(999);
+  date.setSeconds(59);
+  date.setMinutes(59);
+  date.setHours(23);
+  return date;
+}
+
+function isNewDay(date){
+  const midnightTonight = getMidnight(new Date());
+  const midnightTomorrow = new Date(midnightTonight.getTime() + 864e5);
+
+  return date > midnightTonight && date < midnightTomorrow;
+}
+
+$: if($gameStatus !== "IN_PROGRESS") {
+  isNewDay(date) ? $gameStatus = "IN_PROGRESS" : console.log('Waiting for new word')
+}
+// let titleShare = `Katlo ${Math.floor(dayOffset)} ${JSON.parse(localStorage.getItem('rowIndex'))}/6`
+
+const correct = '🟩'
+const present = '🟨'
+const absent = '⬜'
+
+// console.log(titleShare, correct,absent,present, $currentRow)
 
 if($evaluations[0] !== null) {
   const fil = $evaluations.filter(i => i !== null)
@@ -168,13 +190,10 @@ const submitAnswer = () => {
   localStorage.setItem("boardState", JSON.stringify(toStr))
 }
 
-const checkAnswer = (guess:string) => {
-  const date = new Date().getTime()
-  localStorage.setItem("lastPlayedTs", JSON.stringify(date) )
-  
+const checkAnswer = (guess:string) => {  
   let result = []
-  let minusOneStr = word
-  let solution = word
+  let minusOneStr = katlo(today)
+  let solution = katlo(today)
 
   for (let i = 0; i < guess.length; i++) {
       let guessLetter = guess.charAt(i);
@@ -205,7 +224,7 @@ const checkAnswer = (guess:string) => {
   let temp = []
 
   const g = guess.split('').map((letter, index) => {
-      const wordmap = word.charAt(index)
+      const wordmap = katlo(today).charAt(index)
       if(wordmap === letter) temp.push(letter)
       return { letter, wordmap }
   })
@@ -218,25 +237,57 @@ const checkAnswer = (guess:string) => {
   $evaluations[$currentRow] = $tileState[$currentRow]
   $submitted = true
 
-  if(word === guess) {
-    stats.guesses[$currentRow + 1] = stats.guesses[$currentRow + 1] + 1
-    localStorage.setItem('katlo-stats', JSON.stringify(stats))
+  if(katlo(today) === guess) {
     setTimeout(() => jumpy = true, 2200)
-    setTimeout(() => {
-      showModal = true
-      winModal = true
-    }, 2500)
-    localStorage.setItem("gameStatus", JSON.stringify('WIN'))
+    const m = "Panjenengan pancen 👍"
+    const speed = 2000
+    const row = $currentRow + 1
+    const modalDelay = 5000
+    const toastDelay = 3500
+    const gameResult = "WIN"
+    const winstatus = 1
+    updateStatus(m, speed, row, modalDelay, toastDelay, gameResult, winstatus)
+  }
+
+  if($currentRow === 5 && katlo(today) !== guess) {
+    const m = katlo(today).toUpperCase()
+    const speed = 2000
+    const row = $currentRow + 1
+    const modalDelay = 3000
+    const toastDelay = 2000
+    const gameResult = "FAIL"
+    const winstatus = 0
+    updateStatus(m, speed, row, modalDelay, toastDelay, gameResult, winstatus)
   }
 
   nextRow()
+}
+
+const updateStatus = (m:string, s:number, r:number, d:number, t:number, g:string, q:number) => {
+  setTimeout(() => {
+      $visible = true 
+      delay = s
+      message = m
+  }, t)
+    
+  stats.played = Number(stats.played) + 1
+  stats.gamesWon = Number(stats.gamesWon) + q
+  stats.guesses[r] = stats.guesses[r] + q
+  localStorage.setItem('katlo-stats', JSON.stringify(stats))
+  localStorage.setItem("lastPlayedTs", JSON.stringify(new Date().getTime()) )
+
+  setTimeout(() => {
+    showModal = true
+    winModal = true
+  }, d)
+  $gameStatus = g
 }
 
 const updateArray = (e:string) => {
   shake = false
   let max = pos
   max++
-  if(!IN_PROGRESS) return
+  if(!IN_PROGRESS) return 
   if($currentRow === maxRow) return
   if(max > maxLetter && guessRows[$currentRow][maxLetter] !== '') return
 
@@ -271,7 +322,7 @@ let handleWinModal = () => {
 
 <main id="game">
   <section class="message-container">
-    <Toast {message} />
+    <Toast {message} {delay} />
   </section>
   <section class="game-container">
     <Board 
@@ -293,7 +344,7 @@ let handleWinModal = () => {
     <Statistik {winModal} />
   </div>
   <div slot="body">
-    <Graph {winModal} distribution={stats.guesses} guesses={guesses} />
+    <Graph {winModal} distribution={stats.guesses} />
   </div>
 </Modal>
 <Overlay {showOverlay} on:click={() => showOverlay = false} />

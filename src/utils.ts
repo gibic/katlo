@@ -64,5 +64,8 @@ export function createDefaultStats(): Stats {
 		...stats,
 		streak: 0,
 		maxStreak: 0,
+		winPercentage: 0,
+		gamesWon: 0
+
 	};
 };

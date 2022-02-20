@@ -1,4 +1,5 @@
 <script lang="ts">
+import { onDestroy } from "svelte";
 import { fade,fly } from 'svelte/transition';
 export let showModal = false
 
@@ -7,17 +8,23 @@ const MINUTE = 60000;
 const SECOND = 1000;
 let distance = 1000;
 
-$: if(showModal) {
-    const tomorrow = new Date(+new Date().setHours(0, 0, 0, 0) + 86400000);
-    const t = tomorrow.getTime()
 
-    const x = setInterval(function() {
-        const now = new Date().getTime();
-        distance = t - now; 
-        if (distance < 0) clearInterval(x)
-    }, 1000);
-}
+const tomorrow = new Date(+new Date().setHours(0, 0, 0, 0) + 86400000);
+const t = tomorrow.getTime()
 
+const x = setInterval(function() {
+    const now = new Date().getTime();
+    distance = t - now; 
+    if (distance < 0) {
+        clearInterval(x) 
+        localStorage.setItem('gameStatus', JSON.stringify('IN_PROGRESS'))
+    }
+}, 1000);
+
+
+onDestroy(function() {
+     clearInterval(x);
+});
 </script>
 {#if showModal}
 <div class="overlay" class:visible={showModal} in:fade out:fly="{{ y: 30, duration: 500 }}">
@@ -35,14 +42,13 @@ $: if(showModal) {
         </section>
         <section class="modal-footer">
             <slot name="footer">
+            {#if distance > 0}
             <div class="footer-left">
                 <h5>Kata Berikutnya</h5>
                 <div class="clock">
-                    {#if distance > 0}
                     {`${Math.floor(distance / HOUR)}`.padStart(2, "0")}:{`${Math.floor(
                         (distance % HOUR) / MINUTE
                     )}`.padStart(2, "0")}:{`${Math.floor((distance % MINUTE) / SECOND)}`.padStart(2, "0")}
-                    {/if}
                 </div>
                 </div>
                 <div class="footer-right">
@@ -53,6 +59,7 @@ $: if(showModal) {
                     </svg>
                 </button>
             </div>
+            {/if}
             </slot>
         </section>
     </div>

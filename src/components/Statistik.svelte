@@ -1,15 +1,17 @@
 <script lang="ts">
-    export let winModal = false
+  export let winModal = false
+
+  const obj = JSON.parse(localStorage.getItem('katlo-stats'))
 </script>
 {#if winModal}
 <h3 class="modal-title">Statistik</h3>
 <section class="statistic">
     <article class="statistic__block">
-        <h4>1</h4>
+        <h4>{obj.played}</h4>
         <p>x Main</p>
     </article>
     <article class="statistic__block">
-        <h4>100</h4>
+        <h4>{Number(obj.gamesWon) / Number(obj.played) * 100}</h4>
         <p>% Menang</p>
     </article>
     <article class="statistic__block">
