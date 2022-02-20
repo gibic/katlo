@@ -86,13 +86,13 @@ $: {
         welcomeModal = true
       }, 500)
     }
-    console.log(date, todayGame.getTime())
+   
     if(date < todayGame.getTime()) {
       $gameStatus = "IN_PROGRESS" 
       $evaluations = new Array(6).fill(null)
       $boardState = createBoardState()
-      $currentRow = 0
-      localStorage.setItem("rowIndex", JSON.stringify($currentRow))
+  
+      localStorage.setItem("rowIndex", JSON.stringify(0))
       localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
       localStorage.setItem("evaluations", JSON.stringify($evaluations))
     }
