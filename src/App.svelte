@@ -130,7 +130,15 @@ function isNewDay(date){
 }
 
 $: if($gameStatus !== "IN_PROGRESS") {
-  isNewDay(date) ? $gameStatus = "IN_PROGRESS" : console.log('Waiting for new word')
+      if(isNewDay(date)) {
+        $gameStatus = "IN_PROGRESS" 
+        $evaluations = new Array(6).fill(null)
+        $boardState = createBoardState()
+        $currentRow = 0
+        localStorage.setItem("rowIndex", JSON.stringify($currentRow))
+        localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
+        localStorage.setItem("evaluations", JSON.stringify($evaluations))
+      }
 }
 
 const share = () => {
