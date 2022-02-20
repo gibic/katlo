@@ -86,15 +86,16 @@ $: {
         welcomeModal = true
       }, 500)
     }
-   
-    if(date < todayGame.getTime()) {
-      $gameStatus = "IN_PROGRESS" 
-      $evaluations = new Array(6).fill(null)
-      $boardState = createBoardState()
-  
-      localStorage.setItem("rowIndex", JSON.stringify(0))
-      localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
-      localStorage.setItem("evaluations", JSON.stringify($evaluations))
+    
+    if(date < todayGame.setHours(0, 0, 0, 0)) {
+      if($gameStatus === "WIN" || $gameStatus === "FAIL") {
+        $gameStatus = "IN_PROGRESS"
+        $evaluations = new Array(6).fill(null)
+        $boardState = createBoardState()
+        localStorage.setItem("rowIndex", JSON.stringify(0))
+        localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
+        localStorage.setItem("evaluations", JSON.stringify($evaluations))
+      }
     }
 
   }
