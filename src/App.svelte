@@ -86,18 +86,6 @@ $: {
         welcomeModal = true
       }, 500)
     }
-    
-    if(date < todayGame.setHours(0, 0, 0, 0)) {
-      if($gameStatus === "WIN" || $gameStatus === "FAIL") {
-        $gameStatus = "IN_PROGRESS"
-        $evaluations = new Array(6).fill(null)
-        $boardState = createBoardState()
-        localStorage.setItem("rowIndex", JSON.stringify(0))
-        localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
-        localStorage.setItem("evaluations", JSON.stringify($evaluations))
-      }
-    }
-
   }
 }
 	
@@ -108,7 +96,7 @@ onDestroy(() => {
   unsubStatus
 })
 
-const IN_PROGRESS = $gameStatus === "IN_PROGRESS"
+$: IN_PROGRESS = $gameStatus === "IN_PROGRESS"
 const today = new Date()
 const gameBeginning = new Date('2022, 2, 14').setHours(0, 0, 0, 0);
 const dateIndex = (beginning, date) => Math.round((date.setHours(0, 0, 0, 0) - beginning) / 864e5)
@@ -124,6 +112,16 @@ if($visible === false && (statusOnLoad === "WIN" || statusOnLoad === "FAIL")) {
 
 const todayGame = new Date() 
 const date = JSON.parse(localStorage.getItem("lastPlayedTs"))
+if(date < todayGame.setHours(0, 0, 0, 0)) {
+      if($gameStatus === "WIN" || $gameStatus === "FAIL") {
+        $gameStatus = "IN_PROGRESS"
+        $evaluations = new Array(6).fill(null)
+        $boardState = createBoardState()
+        localStorage.setItem("rowIndex", JSON.stringify(0))
+        localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
+        localStorage.setItem("evaluations", JSON.stringify($evaluations))
+      }
+    }
 let welcomeModal = false
 
 const share = () => {
@@ -223,7 +221,8 @@ const checkAnswer = (guess:string) => {
   let result = []
   let minusOneStr = katlo(today)
   let solution = katlo(today)
-
+  localStorage.setItem("lastPlayedTs", JSON.stringify(new Date().getTime()) )
+  
   for (let i = 0; i < guess.length; i++) {
       let guessLetter = guess.charAt(i);
       let solutionLetter = solution.charAt(i);
@@ -315,7 +314,6 @@ const updateStatus = (i:ToastModal) => {
   }
 
   localStorage.setItem('katlo-stats', JSON.stringify(stats))
-  localStorage.setItem("lastPlayedTs", JSON.stringify(new Date().getTime()) )
 
   setTimeout(() => {
     showModal = true
