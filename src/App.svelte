@@ -87,6 +87,17 @@ $: {
       }, 500)
     }
 
+    if(($gameStatus !== "IN_PROGRESS") && (date.setHours(0, 0, 0, 0) > todayGame.setHours(0, 0, 0, 0))) {
+      $gameStatus = "IN_PROGRESS" 
+      $evaluations = new Array(6).fill(null)
+      $boardState = createBoardState()
+      $currentRow = 0
+      localStorage.setItem("rowIndex", JSON.stringify($currentRow))
+      localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
+      localStorage.setItem("evaluations", JSON.stringify($evaluations))
+      console.log('new')
+    }
+
   }
 }
 	
@@ -111,6 +122,7 @@ if($visible === false && (statusOnLoad === "WIN" || statusOnLoad === "FAIL")) {
   }, 1500)
 }
 
+const todayGame = new Date() 
 const date = new Date(localStorage.getItem("lastPlayedTs"))
 let welcomeModal = false
 function getMidnight(day:Date){
@@ -127,18 +139,6 @@ function isNewDay(date){
   const midnightTomorrow = new Date(midnightTonight.getTime() + 864e5);
 
   return date > midnightTonight && date < midnightTomorrow;
-}
-
-$: if($gameStatus !== "IN_PROGRESS") {
-      if(isNewDay(date)) {
-        $gameStatus = "IN_PROGRESS" 
-        $evaluations = new Array(6).fill(null)
-        $boardState = createBoardState()
-        $currentRow = 0
-        localStorage.setItem("rowIndex", JSON.stringify($currentRow))
-        localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
-        localStorage.setItem("evaluations", JSON.stringify($evaluations))
-      }
 }
 
 const share = () => {
