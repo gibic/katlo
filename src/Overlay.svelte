@@ -12,15 +12,36 @@ export let showOverlay:boolean
     <div class="content">
         <header>
             <h2>Settings</h2>
+            <button on:click>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                    <path fill="var(--color-tone-1)" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
+                  </svg>
+            </button>
         </header>
 		<Setting type="switch" bind:value={$settings.dark}>
 			<span slot="title">Dark Theme</span>
 		</Setting>
-        <button on:click>
-            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                <path fill="var(--color-tone-1)" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
-              </svg>
-        </button>
+        <div class="block">
+            <div class="block-left">
+                <h4>Komunitas</h4>
+                <p>Pertemanan dunia maya</p>
+            </div>
+            <div class="block-right">
+                <a href="https://twitter.com/ginseladipura" target="_blank">Twitter</a>
+            </div>
+        </div>
+        <div class="block">
+            <div class="block-left">
+                <h4>Feedback</h4>
+                <p>Sumbang saran, pertanyaan, dan sebagainya</p>
+            </div>
+            <div class="block-right">
+                <a href="mailto:ginanjar.seladipura@gmail.com" target="_blank">Email</a>
+            </div>
+        </div>
+        <div class="box-bottom">
+            <p><small>Adopted from <a href="https://www.nytimes.com/games/wordle/index.html" target="_blank">Wordle</a> | Developed by: <a href="https://twitter.com/ginseladipura" target="_blank">Gin Seladipura</a></small></p>
+        </div>
     </div>
 </section>
 {/if}
@@ -70,13 +91,43 @@ button {
 h2 {
     font-size: 16px;
     text-transform: uppercase;
-    margin-bottom: 2rem;
+    margin: 2rem 0;
 }
 
+.box-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-basis: 100%;
+    flex-grow: 1;
+    padding: 1rem;
+    font-size: 12px;
+    color: var(--color-tone-2);
+}
+
+a {
+color: var(--color-tone-2)
+}
+.block {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--color-tone-4);
+}
+.block-left p {
+    font-size: 12px;
+    color: var(--color-tone-2);
+    font-weight: 300;
+    margin: 5px 0;
+}
 @media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
 .content {
     max-width: 100%;
     padding: 0;
+}
+.block {
+    padding: 16px;
 }
 }
 </style>

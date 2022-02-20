@@ -2,8 +2,9 @@
     import { fade, fly } from 'svelte/transition';
     import { visible } from '../store';
     export let message:string
+    export let delay = 800
 
-    $: if($visible) setTimeout(() => $visible = false, 800)
+    $: if($visible) setTimeout(() => $visible = false, delay)
 </script>
 {#if $visible}
 <div class="toast" in:fly="{{ y: 20, duration: 200 }}" out:fade>{message}</div>
@@ -19,6 +20,7 @@
     top: 100px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 1;
+    z-index: 5000;
+    font-weight: 700;
 }
 </style>

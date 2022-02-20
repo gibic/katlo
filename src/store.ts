@@ -11,3 +11,4 @@ export const wrongState = writable([]);
 export const submitted = writable(false);
 export const currentRow = writable(0);
 export const visible = writable(false);
+export const gameStatus = writable();
