@@ -86,8 +86,8 @@ $: {
         welcomeModal = true
       }, 500)
     }
-    console.log(date.setHours(0, 0, 0, 0), todayGame.setHours(0, 0, 0, 0))
-    if(($gameStatus !== "IN_PROGRESS") && (date.setHours(0, 0, 0, 0) < todayGame.setHours(0, 0, 0, 0))) {
+    
+    if(($gameStatus !== "IN_PROGRESS") && (date < todayGame)) {
       $gameStatus = "IN_PROGRESS" 
       $evaluations = new Array(6).fill(null)
       $boardState = createBoardState()
@@ -95,7 +95,6 @@ $: {
       localStorage.setItem("rowIndex", JSON.stringify($currentRow))
       localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
       localStorage.setItem("evaluations", JSON.stringify($evaluations))
-      console.log('new')
     }
 
   }
@@ -123,7 +122,7 @@ if($visible === false && (statusOnLoad === "WIN" || statusOnLoad === "FAIL")) {
 }
 
 const todayGame = new Date() 
-const date = new Date(localStorage.getItem("lastPlayedTs"))
+const date = JSON.parse(localStorage.getItem("lastPlayedTs"))
 let welcomeModal = false
 
 const share = () => {
