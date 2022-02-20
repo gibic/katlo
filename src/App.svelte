@@ -86,8 +86,8 @@ $: {
         welcomeModal = true
       }, 500)
     }
-    
-    if(($gameStatus !== "IN_PROGRESS") && (date < todayGame.getTime())) {
+    console.log(date, todayGame.getTime())
+    if(date < todayGame.getTime()) {
       $gameStatus = "IN_PROGRESS" 
       $evaluations = new Array(6).fill(null)
       $boardState = createBoardState()
