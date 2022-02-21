@@ -48,9 +48,7 @@ onDestroy(function() {
             <div class="footer-left">
                 <h5>Kata Berikutnya</h5>
                 <div class="clock">
-                    {`${Math.floor(distance / HOUR)}`.padStart(2, "0")}:
-                    {`${Math.floor((distance % HOUR) / MINUTE)}`.padStart(2, "0")}:
-                    {`${Math.floor((distance % MINUTE) / SECOND)}`.padStart(2, "0")}
+                    {`${Math.floor(distance / HOUR)}`.padStart(2, "0")}:{`${Math.floor((distance % HOUR) / MINUTE)}`.padStart(2, "0")}:{`${Math.floor((distance % MINUTE) / SECOND)}`.padStart(2, "0")}
                 </div>
                 </div>
                 <div class="footer-right">

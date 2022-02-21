@@ -87,8 +87,6 @@ $: {
         welcomeModal = true
       }, 500)
     }
-
-
   }
 }
 
@@ -97,18 +95,20 @@ const tomorrow = new Date(+new Date().setHours(0, 0, 0, 0) + 86400000);
 const t = tomorrow.getTime()
 
 const x = setInterval(function() {
-    const now = new Date().getTime();
-    distance = t - now; 
-    
-    if (distance < 2000 && !welcomeModal) {
+  const now = new Date().getTime();
+  distance = t - now; 
+  if (distance < 2000) {
+      resetGame()
+      if(stats.played > 0) {
         $visible = true
         message = 'Waktu habis'
         setTimeout(() => {
           $visible = false
-          resetGame()
+          showModal = false
         }, 1000)
-    }
-    if(distance < 0) clearInterval(x) 
+      }
+  }
+  if(distance < 0) clearInterval(x) 
 }, 1000);
 	
 onDestroy(() => {
@@ -170,7 +170,7 @@ const share = () => {
   const tileToShare = tileShare.toString().replace(/\s]/g,"").replace(/[,]/g,"\n")
   const urlToShare = 'https://katlo.vercel.app'
 
-  navigator.clipboard.writeText(titleShare + '\n' + tileToShare + '\n' + urlToShare).then(
+  navigator.clipboard.writeText(titleShare + '\n\n' + tileToShare + '\n\n' + urlToShare).then(
       () => {
         $visible = true
         message = 'Berhasil di-copy'
