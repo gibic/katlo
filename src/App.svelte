@@ -87,6 +87,7 @@ $: {
         welcomeModal = true
       }, 500)
     }
+    resetGame()
   }
 }
 
@@ -97,8 +98,7 @@ const t = tomorrow.getTime()
 const x = setInterval(function() {
   const now = new Date().getTime();
   distance = t - now; 
-  if (distance < 2000) {
-      resetGame()
+  if (distance < 0) {
       if(stats.played > 0) {
         $visible = true
         message = 'Waktu habis'
@@ -107,8 +107,9 @@ const x = setInterval(function() {
           showModal = false
         }, 1000)
       }
+     
+      clearInterval(x)
   }
-  if(distance < 0) clearInterval(x) 
 }, 1000);
 	
 onDestroy(() => {
@@ -119,8 +120,11 @@ onDestroy(() => {
   clearInterval(x)
 })
 
+let today = new Date()
+
 function resetGame(){
   $visible = false
+  today = new Date()
   $gameStatus = "IN_PROGRESS"
   $evaluations = new Array(6).fill(null)
   $boardState = createBoardState()
@@ -136,10 +140,10 @@ function resetGame(){
 }
 
 $: IN_PROGRESS = $gameStatus === "IN_PROGRESS"
-const today = new Date()
 const gameBeginning = new Date('2022, 2, 14').setHours(0, 0, 0, 0);
 const dateIndex = (beginning, date) => Math.round((date.setHours(0, 0, 0, 0) - beginning) / 864e5)
 const katlo = (date:Date) => words.words[dateIndex(gameBeginning, date) % words.words.length];
+
 
 const statusOnLoad = JSON.parse(localStorage.getItem("gameStatus"))
 if($visible === false && (statusOnLoad === "WIN" || statusOnLoad === "FAIL")) {
