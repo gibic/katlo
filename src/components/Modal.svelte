@@ -17,6 +17,7 @@ const t = tomorrow.getTime()
 const x = setInterval(function() {
     const now = new Date().getTime();
     distance = t - now; 
+    if(distance < 1000) showModal = false
     if (distance < 0) {
         clearInterval(x) 
     }
