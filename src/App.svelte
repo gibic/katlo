@@ -87,6 +87,9 @@ $: {
         welcomeModal = true
       }, 500)
     }
+    
+    const last = JSON.parse(localStorage.getItem('lastPlayedTs'))
+    if(stats.played > 0 && (last < today.setHours(0,0,0))) resetGame()
   }
 }
 
@@ -120,7 +123,6 @@ onDestroy(() => {
 })
 
 let today = new Date()
-
 function resetGame(){
   $visible = false
   today = new Date()
