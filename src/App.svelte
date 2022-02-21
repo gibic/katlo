@@ -87,7 +87,6 @@ $: {
         welcomeModal = true
       }, 500)
     }
-    resetGame()
   }
 }
 
@@ -107,7 +106,7 @@ const x = setInterval(function() {
           showModal = false
         }, 1000)
       }
-     
+      resetGame()
       clearInterval(x)
   }
 }, 1000);
