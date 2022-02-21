@@ -11,7 +11,8 @@ import {
   apreciation,
   correct,
   present,
-  absent
+  absent,
+  gameState
 } from "./utils"
 import { 
   settings, 
@@ -86,15 +87,53 @@ $: {
         welcomeModal = true
       }, 500)
     }
+
+
   }
 }
+
+let distance = 1000;
+const tomorrow = new Date(+new Date().setHours(0, 0, 0, 0) + 86400000);
+const t = tomorrow.getTime()
+
+const x = setInterval(function() {
+    const now = new Date().getTime();
+    distance = t - now; 
+    
+    if (distance < 2000 && !welcomeModal) {
+        $visible = true
+        message = 'Waktu habis'
+        setTimeout(() => {
+          $visible = false
+          resetGame()
+        }, 1000)
+    }
+    if(distance < 0) clearInterval(x) 
+}, 1000);
 	
 onDestroy(() => {
   unsubscribe
   unsubscribBoard
   unsubsEval
   unsubStatus
+  clearInterval(x)
 })
+
+function resetGame(){
+  $visible = false
+  $gameStatus = "IN_PROGRESS"
+  $evaluations = new Array(6).fill(null)
+  $boardState = createBoardState()
+  guessRows = createGuessRows()
+  $tileState = gameState()
+  $correctState = []
+  $wrongState = []
+  $missedState = []
+  $currentRow = 0
+  localStorage.setItem("rowIndex", JSON.stringify($currentRow))
+  localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
+  localStorage.setItem("evaluations", JSON.stringify($evaluations))
+}
 
 $: IN_PROGRESS = $gameStatus === "IN_PROGRESS"
 const today = new Date()
@@ -110,18 +149,9 @@ if($visible === false && (statusOnLoad === "WIN" || statusOnLoad === "FAIL")) {
   }, 1500)
 }
 
-const todayGame = new Date() 
-const date = JSON.parse(localStorage.getItem("lastPlayedTs"))
-if(date < todayGame.setHours(0, 0, 0, 0)) {
-      if($gameStatus === "WIN" || $gameStatus === "FAIL") {
-        $gameStatus = "IN_PROGRESS"
-        $evaluations = new Array(6).fill(null)
-        $boardState = createBoardState()
-        localStorage.setItem("rowIndex", JSON.stringify(0))
-        localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
-        localStorage.setItem("evaluations", JSON.stringify($evaluations))
-      }
-    }
+// const todayGame = new Date() 
+// const date = JSON.parse(localStorage.getItem("lastPlayedTs"))
+// console.log(date < todayGame.setHours(0, 0, 0, 0))
 let welcomeModal = false
 
 const share = () => {
