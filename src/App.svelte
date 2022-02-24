@@ -12,7 +12,14 @@ import {
   correct,
   present,
   absent,
-  gameState
+  maxLetter,
+  maxRow,
+  row,
+  status,
+  resetGame,
+  today,
+  localEval,
+  last
 } from "./utils"
 import { 
   settings, 
@@ -46,18 +53,13 @@ let jumpy:boolean
 let winModal = false
 let pos = 0
 let delay:number
-const maxLetter = 5
-const maxRow = 6
 let root: HTMLElement;
 
-gameStatus.set(JSON.parse(localStorage.getItem("gameStatus")) || "IN_PROGRESS")
-evaluations.set((JSON.parse(localStorage.getItem("evaluations"))) || new Array(6).fill(null))
 boardState.set((JSON.parse(localStorage.getItem("boardState")) as BoardState) || createBoardState())
+evaluations.set((JSON.parse(localStorage.getItem("evaluations"))) || new Array(6).fill(null))
 settings.set((JSON.parse(localStorage.getItem("settings")) as Settings) || createDefaultSettings())
 const unsubscribe = settings.subscribe((s) => localStorage.setItem("settings", JSON.stringify(s)))
-const unsubscribBoard = boardState.subscribe((b) => localStorage.setItem("boardState", JSON.stringify(b)))
-const unsubsEval = evaluations.subscribe((s) => localStorage.setItem("evaluations", JSON.stringify(s)))
-const unsubStatus = gameStatus.subscribe((g) => localStorage.setItem("gameStatus", JSON.stringify(g)))
+const unsubsBoard = boardState.subscribe((b) => localStorage.setItem("boardState", JSON.stringify(b)))
 
 stats = (JSON.parse(localStorage.getItem(`katlo-stats`)) as Stats) || createDefaultStats()
 
@@ -70,9 +72,10 @@ $: {
     localStorage.setItem('katlo-stats', JSON.stringify(stats))
     localStorage.setItem("settings", JSON.stringify($settings))
     $settings.dark ? root.classList.add("dark") : root.classList.remove("dark")
-    const row = JSON.parse(localStorage.getItem("rowIndex"))
+    if(!localEval) localStorage.setItem("evaluations", JSON.stringify($evaluations))
+    if(!status) localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
     if(!row) localStorage.setItem("rowIndex", JSON.stringify($currentRow))
-
+    
     if( row > 0) {
       const board = JSON.parse(localStorage.getItem("boardState")).filter((i:string) => i !== '')
       for(let i = 0; i < board.length; i++){
@@ -80,17 +83,24 @@ $: {
         $currentRow = row
       }
     }
-    if(stats.played === 0 && row === 0) {
+
+    if(last < today.setHours(0,0,0)) resetGame()
+
+    if($visible === false && (status === "WIN" || status === "FAIL")) {
       setTimeout(() => {
         showModal = true
-        winModal = false
-        welcomeModal = true
-      }, 500)
+        winModal = true
+      }, 1500)
     }
-    
-    const last = JSON.parse(localStorage.getItem('lastPlayedTs'))
-    if(last < today.setHours(0,0,0)) resetGame()
   }
+}
+
+$: if(stats.played === 0 && row === 0) {
+  setTimeout(() => {
+    showModal = true
+    winModal = false
+    welcomeModal = true
+  }, 500)
 }
 
 let distance = 1000;
@@ -98,66 +108,34 @@ const tomorrow = new Date(+new Date().setHours(0, 0, 0, 0) + 86400000);
 const t = tomorrow.getTime()
 
 const x = setInterval(function() {
-  const now = new Date().getTime();
-  distance = t - now; 
-  if (distance < 0) {
-      if(stats.played > 0) {
-        $visible = true
-        message = 'Waktu habis'
-        setTimeout(() => {
-          $visible = false
-          showModal = false
-        }, 1000)
-      }
-      resetGame()
-      clearInterval(x)
-  }
+const now = new Date().getTime();
+distance = t - now; 
+  
+if (distance < 0) {
+    if(stats.played > 0) {
+      $visible = true
+      message = 'Waktu habis'
+      setTimeout(() => {
+        $visible = false
+        showModal = false
+      }, 1000)
+    }
+    resetGame()
+    clearInterval(x)
+}
 }, 1000);
 	
 onDestroy(() => {
   unsubscribe
-  unsubscribBoard
-  unsubsEval
-  unsubStatus
+  unsubsBoard
   clearInterval(x)
 })
 
-let today = new Date()
-function resetGame(){
-  $visible = false
-  winModal = false
-  today = new Date()
-  $gameStatus = "IN_PROGRESS"
-  $evaluations = new Array(6).fill(null)
-  $boardState = createBoardState()
-  guessRows = createGuessRows()
-  $tileState = gameState()
-  $correctState = []
-  $wrongState = []
-  $missedState = []
-  $currentRow = 0
-  localStorage.setItem("rowIndex", JSON.stringify($currentRow))
-  localStorage.setItem("gameStatus", JSON.stringify($gameStatus))
-  localStorage.setItem("evaluations", JSON.stringify($evaluations))
-}
-
 $: IN_PROGRESS = $gameStatus === "IN_PROGRESS"
 const gameBeginning = new Date('2022, 2, 14').setHours(0, 0, 0, 0);
-const dateIndex = (beginning, date) => Math.round((date.setHours(0, 0, 0, 0) - beginning) / 864e5)
+const dateIndex = (beginning:number, date:Date): number => Math.round((date.setHours(0, 0, 0, 0) - beginning) / 864e5)
 const katlo = (date:Date) => words.words[dateIndex(gameBeginning, date) % words.words.length];
 
-
-const statusOnLoad = JSON.parse(localStorage.getItem("gameStatus"))
-if($visible === false && (statusOnLoad === "WIN" || statusOnLoad === "FAIL")) {
-  setTimeout(() => {
-    showModal = true
-    winModal = true
-  }, 1500)
-}
-
-// const todayGame = new Date() 
-// const date = JSON.parse(localStorage.getItem("lastPlayedTs"))
-// console.log(date < todayGame.setHours(0, 0, 0, 0))
 let welcomeModal = false
 
 const share = () => {
@@ -224,7 +202,7 @@ const handdlekeyDown = (e) => {
       delKey() 
       return
     }
-    if(letter === 'Enter') {
+    if(letter == 'Enter') {
       shake = false
       submitAnswer() 
       return
