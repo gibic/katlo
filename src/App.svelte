@@ -442,14 +442,16 @@ let handleWelcomeModal = () => {
   </div>
   <div slot="body">
     <Graph {winModal} {stats} distribution={stats.guesses} />
-    {#await getMakna}
-      <p>Wait</p>
-    {:then  makna} 
-    <div class="definition">
-      <p>{katlo(today)}</p>
-      <em>{makna}</em>
-    </div>
-    {/await}
+    {#if !IN_PROGRESS}
+      {#await getMakna}
+        <p>Wait</p>
+      {:then  makna} 
+      <div class="definition">
+        <p>{katlo(today)}</p>
+        <em>{makna}</em>
+      </div>
+      {/await}
+      {/if}
   </div>
 </Modal>
 {#if welcomeModal && !winModal}
