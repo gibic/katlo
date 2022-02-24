@@ -7,6 +7,8 @@ export const words = {
 	},
 };
 
+export const kamus = 'kamus_batangan.json'
+
 export function createDefaultSettings(): Settings {
 	return {
 		dark: true,

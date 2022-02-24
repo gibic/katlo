@@ -12,7 +12,8 @@ import {
   correct,
   present,
   absent,
-  gameState
+  gameState,
+  kamus
 } from "./utils"
 import { 
   settings, 
@@ -87,11 +88,25 @@ $: {
         welcomeModal = true
       }, 500)
     }
+
     
     const last = JSON.parse(localStorage.getItem('lastPlayedTs'))
     if(last < today.setHours(0,0,0)) resetGame()
   }
 }
+
+async function fetchKamusJSON() {
+  const response = await fetch(kamus);
+  const definisi = await response.json();
+  return definisi;
+}
+const getMakna = fetchKamusJSON().then(definisi => {
+  for (const [key, value] of Object.entries(definisi)) {
+    if (key === katlo(today).toLowerCase()) {
+      return value.toString()
+    }
+  }
+})
 
 let distance = 1000;
 const tomorrow = new Date(+new Date().setHours(0, 0, 0, 0) + 86400000);
@@ -244,7 +259,8 @@ const submitAnswer = () => {
   
   if(!words.valid.includes(guess)) {
     shake = true
-    message = 'Word not on list'
+    message = 'Kata tersebut belum ada di kamus kami'
+    delay = 1500
     $visible = true
     return
   }
@@ -315,10 +331,10 @@ const checkAnswer = (guess:string) => {
   }
 
   if($currentRow === 5 && katlo(today) !== guess) {
-    toastModal.m = katlo(today).toUpperCase()
-    toastModal.speed = 2000
+    toastModal.m = `Kata hari ini adalah: ${katlo(today).toUpperCase()}`
+    toastModal.speed = 4000
     toastModal.row = $currentRow + 1
-    toastModal.modalDelay = 3000
+    toastModal.modalDelay = 6000
     toastModal.toastDelay = 2000
     toastModal.gameResult = "FAIL"
     toastModal.winstatus = 0
@@ -426,6 +442,14 @@ let handleWelcomeModal = () => {
   </div>
   <div slot="body">
     <Graph {winModal} {stats} distribution={stats.guesses} />
+    {#await getMakna}
+      <p>Wait</p>
+    {:then  makna} 
+    <div class="definition">
+      <p>{katlo(today)}</p>
+      <em>{makna}</em>
+    </div>
+    {/await}
   </div>
 </Modal>
 {#if welcomeModal && !winModal}
@@ -551,6 +575,24 @@ p {
 a {
   color: inherit
 }
+
+.definition {
+  width: 80%;
+  margin: 1.5rem auto;
+}
+.definition p {
+  font-weight: 700;
+  font-size: 24px;
+  text-transform: capitalize;
+}
+
+.definition em {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.25;
+  font-style: italic;
+}
+
 @media screen and (max-width: 767px) {
   #game {
     max-width: 90vw;
