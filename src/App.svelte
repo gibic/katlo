@@ -142,7 +142,8 @@ function resetGame(){
 }
 
 $: IN_PROGRESS = $gameStatus === "IN_PROGRESS"
-const gameBeginning = new Date('2022, 2, 14').setHours(0, 0, 0, 0);
+const dt = "2022-2-14 00:00:00"
+const gameBeginning = new Date(dt.replace(/-/g, "/"));
 const dateIndex = (beginning, date) => Math.round((date.setHours(0, 0, 0, 0) - beginning) / 864e5)
 const katlo = (date:Date) => words.words[dateIndex(gameBeginning, date) % words.words.length];
 
