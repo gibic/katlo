@@ -199,7 +199,7 @@ if($evaluations[0] !== null) {
 
 const handdleArray = (e) => {
   if(!IN_PROGRESS) return
-  if(e.detail == 'Enter') {
+  if(e.detail.toLowerCase() == 'enter') {
     shake = false
     submitAnswer() 
     return
