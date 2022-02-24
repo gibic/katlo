@@ -224,7 +224,7 @@ const handdlekeyDown = (e) => {
       delKey() 
       return
     }
-    if(letter == 'Enter') {
+    if(letter === 'Enter') {
       shake = false
       submitAnswer() 
       return
