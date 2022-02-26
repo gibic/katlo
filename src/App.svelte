@@ -1,6 +1,7 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import { onDestroy } from 'svelte'
+import definitions from "./definition";
 import { 
   createDefaultSettings, 
   words, 
@@ -94,19 +95,6 @@ $: {
     if(last < today.setHours(0,0,0)) resetGame()
   }
 }
-
-async function fetchKamusJSON() {
-  const response = await fetch(kamus);
-  const definisi = await response.json();
-  return definisi;
-}
-const getMakna = fetchKamusJSON().then(definisi => {
-  for (const [key, value] of Object.entries(definisi)) {
-    if (key === katlo(today).toLowerCase()) {
-      return value.toString()
-    }
-  }
-})
 
 let distance = 1000;
 const tomorrow = new Date(+new Date().setHours(0, 0, 0, 0) + 86400000);
@@ -443,14 +431,10 @@ let handleWelcomeModal = () => {
   <div slot="body">
     <Graph {winModal} {stats} distribution={stats.guesses} />
     {#if !IN_PROGRESS}
-      {#await getMakna}
-        <p>Wait</p>
-      {:then  makna} 
       <div class="definition">
         <p>{katlo(today)}</p>
-        <em>{makna}</em>
+        <em>{definitions[katlo(today)]}</em>
       </div>
-      {/await}
       {/if}
   </div>
 </Modal>
