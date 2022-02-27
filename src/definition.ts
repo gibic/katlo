@@ -7318,7 +7318,7 @@ const definitions = {
     cukat: 'I kn. trêngginas, sarwa rikat tandang-tanduke. II di-[x] kw: diculik.',
     cukeh: 'wis [x] êngg. wis rampung (wis ora rêmbugan manèh).',
     cuken: 'kasur [x] kn. kasur sing dicuki; kc. cuki.',
-    cukil: 'I kn. apa-apa sing dianggo nyuthik lan nyongkèl apa-apa sing krakêt; di-[x]: 1 diwêtokake (dicuthik, diklèthèk) nganggo cukil, up. krambile di-[x]; 2 dilong sathithik tmr. pakarangan, sawah lsp; 3 dipêthik, dicuplik tmr. karangan lsp. II êngg. kn: 1 turun-turune wong sing cakal-bakal ing sawijining desa ut. dhukuh; 2 padatan, barang darbe lsp. sing wis turun-tumurun saka wong sing cakal-bakal; pa-[x]-an br: dhukuh, padunungan; ma-[x]-an br: dhêdhukuh. III êngg: bngs. siwur sing digawe bumbung.',
+    cukil: 'I kn. apa-apa sing dianggo nyuthik lan nyongkèl apa-apa sing krakêt; di-[x]: 1 diwêtokake (dicuthik, diklèthèk) nganggo cukil, up. krambile di-[x]; 2 dilong sathithik tmr. pakarangan, sawah lsp;',
     cukit: 'kn. 1 iratan pring (kayu) digilig kaya sada kanggo ngulêt tike (kèhe têlu); 2 luthik dianggo prabot mangan tmr. Cina ut. Jêpang (kèhe loro); 3 êngg. pc. porok, garpu; di-[x]: 1 diulêt nganggo cukit, dicuthik; 2 êngg. dicukil.',
     cukul: 'kw. thukul, tuwuh; cêcukulan: têtuwuhan, tanêm tuwuh.',
     cukup: 'n. cêkap k. 1 sêdhêng, ora kurang; 2 (ut. [x]-an) sêdhêngan, ora kurang ora luwih; 3 (ut. wong [x]) ora kêkurangan, sugih; di-[x]: disampêti kabutuhane; di-[x]-ake: diganêpake, diwuwuhi nganti bisa cukup, disampêtake; kê-[x]-an: ora kêkurangan, rada sugih.',
