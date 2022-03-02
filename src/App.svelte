@@ -13,8 +13,7 @@ import {
   correct,
   present,
   absent,
-  gameState,
-  kamus
+  gameState
 } from "./utils"
 import { 
   settings, 
@@ -159,27 +158,27 @@ if($visible === false && (statusOnLoad === "WIN" || statusOnLoad === "FAIL")) {
   }, 1500)
 }
 
-// const todayGame = new Date() 
-// const date = JSON.parse(localStorage.getItem("lastPlayedTs"))
-// console.log(date < todayGame.setHours(0, 0, 0, 0))
 let welcomeModal = false
 
+let countTitle = 'x'
+$gameStatus === 'WIN' ? countTitle = JSON.parse(localStorage.getItem('rowIndex')) : countTitle = 'x'
+$: titleShare = `Katlo ${Math.floor(dateIndex(gameBeginning, today))} ${countTitle}/6`
+$: tileShare = $evaluations.filter(i => i !== null)
+$: for(let k = 0;k < tileShare.length;k++){
+  tileShare[k] = tileShare[k].join('')
+  .replace(/correct/g, correct)
+  .replace(/missed/g, present)
+  .replace(/wrong/g, absent)
+}
+$: tileToShare = tileShare.toString().replace(/\s]/g,"").replace(/[,]/g,"\n")
+const urlToShare = 'https://katlo.vercel.app'
+
+const tweet = () => {
+    const encodeURI = tileToShare.replace(/\n/g, "%0A");
+    const shareToTwitter = `https://twitter.com/intent/tweet?text=${titleShare}%0A%0A${encodeURI}%0A%0A${urlToShare}`;
+    window.open(shareToTwitter, "_blank");
+}
 const share = () => {
-  let countTitle = 'x'
-  $gameStatus === 'WIN' ? countTitle = JSON.parse(localStorage.getItem('rowIndex')) : countTitle = 'x'
-
-  let titleShare = `Katlo ${Math.floor(dateIndex(gameBeginning, today))} ${countTitle}/6`
-
-  let tileShare = $evaluations.filter(i => i !== null)
-  for(let k = 0;k < tileShare.length;k++){
-    tileShare[k] = tileShare[k].join('')
-    .replace(/correct/g, correct)
-    .replace(/missed/g, present)
-    .replace(/wrong/g, absent)
-  }
-  const tileToShare = tileShare.toString().replace(/\s]/g,"").replace(/[,]/g,"\n")
-  const urlToShare = 'https://katlo.vercel.app'
-
   navigator.clipboard.writeText(titleShare + '\n\n' + tileToShare + '\n\n' + urlToShare).then(
       () => {
         $visible = true
@@ -308,7 +307,7 @@ const checkAnswer = (guess:string) => {
 
   if(katlo(today) === guess) {
     setTimeout(() => jumpy = true, 2200)
-    toastModal.m = apreciation[$currentRow].toString()
+    toastModal.m = apreciation[$currentRow][Math.floor(Math.random() * apreciation[$currentRow].length)].toString()
     toastModal.speed = 2000
     toastModal.row = $currentRow + 1
     toastModal.modalDelay = 5000
@@ -424,7 +423,7 @@ let handleWelcomeModal = () => {
     />
   </section>
 </main>
-<Modal {showModal} {stats} on:click={modalClose} on:share={share}>
+<Modal {showModal} {stats} on:click={modalClose} on:share={share} on:tweet={tweet}>
   <div slot="head">
     <Statistik {winModal} />
   </div>

@@ -62,13 +62,13 @@ export const correct = '🟩'
 export const present = '🟨'
 export const absent = '⬜'
 
-export const apreciation:String[] = [
-	'Panjenengan pancen 👍',
-	'Sangar, lur!',
-	'Top tenan',
-	'Sekecaaken Mawon, lur :)',
-	'Sithik meneh',
-	'Meh wae...',
+export const apreciation:String[][] = [
+	['Panjenengan pancen 👍', 'Ngewriii'],
+	['Sangar, lur!', 'Wuih, manteb lur!'],
+	['Top tenan', 'Josss!'],
+	['Sekecaaken Mawon, lur :)', 'Lumayaaan'],
+	['Sithik meneh', 'Fiuhhh... ambegan sik...'],
+	['Meh wae...', 'Nyaris, rek'],
 ]
 
 export function createDefaultStats(): Stats {
