@@ -160,7 +160,7 @@ if($visible === false && (statusOnLoad === "WIN" || statusOnLoad === "FAIL")) {
 
 let welcomeModal = false
 
-$: countTitle = 'x'
+$: countTitle = $currentRow.toString()
 $gameStatus === 'WIN' ? countTitle = JSON.parse(localStorage.getItem('rowIndex')) : countTitle = 'x'
 $: titleShare = `Katlo ${Math.floor(dateIndex(gameBeginning, today))} ${countTitle}/6`
 $: tileShare = $evaluations.filter(i => i !== null)
