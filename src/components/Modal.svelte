@@ -1,4 +1,6 @@
 <script lang="ts">
+import { gameStatus } from "../store";
+
 import { onDestroy, createEventDispatcher } from "svelte";
 import { fade,fly } from 'svelte/transition';
 export let showModal = false
@@ -44,7 +46,7 @@ onDestroy(function() {
         </section>
         <section class="modal-footer">
             <slot name="footer">
-            {#if stats.played > 0}
+            {#if stats.played > 0 && $gameStatus !== 'IN_PROGRESS'}
             <div class="footer-left">
                 <h5>Kata Berikutnya</h5>
                 <div class="clock">
@@ -57,6 +59,10 @@ onDestroy(function() {
                     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                         <path fill="var(--white)" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92zM18 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM6 13c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm12 7.02c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"></path>
                     </svg>
+                </button>
+                <button on:click={() => dispatch('tweet')} class="tweet">
+                    <h6 class="modal-footer-title">Tweet</h6>
+                    <svg width="24" height="24" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg"><title>twitter-logo</title><g fill="none" fill-rule="evenodd"><path d="M170.2264 442.7654c162.2648 0 251.0168-140.0367 251.0168-261.4758 0-3.9775 0-7.9371-.258-11.8788 17.2659-13.009 32.1701-29.1167 44.0148-47.5687-16.1013 7.4318-33.1817 12.3057-50.6712 14.4587 18.4168-11.4849 32.2005-29.5486 38.786-50.8295-17.3177 10.7044-36.2637 18.2483-56.0204 22.3062-27.3466-30.29-70.8-37.7036-105.9942-18.0837-35.194 19.62-53.3763 61.3941-44.351 101.8979-70.9346-3.7043-137.0242-38.6047-181.8212-96.0154-23.4157 41.9903-11.4554 95.7083 27.3136 122.6754-14.0397-.4335-27.7732-4.3786-40.0416-11.5025v1.1646c.0115 43.7452 29.6141 81.4229 70.778 90.085-12.9882 3.6897-26.6156 4.229-39.8352 1.5766 11.5575 37.4355 44.6783 63.0807 82.4224 63.8192-31.2398 25.5748-69.831 39.4584-109.564 39.4166A172.495 172.495 0 0 1 35 401.4854c40.345 26.9696 87.2885 41.275 135.2264 41.2083" fill="#ffffff"/><path d="M35 35h430v430H35z"/></g></svg>
                 </button>
             </div>
             {/if}
@@ -155,6 +161,11 @@ h6.modal-footer-title {
     width: 80%;
     font-size: 20px;
     height: 52px;
+    margin-bottom: .5rem;
+}
+.footer-right button.tweet {
+    background-color: #1DA1F2;
+    margin-bottom: 0;
 }
 .footer-left {
     text-align: center;
