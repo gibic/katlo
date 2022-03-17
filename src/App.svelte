@@ -174,14 +174,15 @@ $: for(let k = 0;k < tileShare.length;k++){
 }
 $: tileToShare = tileShare.toString().replace(/\s]/g,"").replace(/[,]/g,"\n")
 const urlToShare = 'https://katlo.vercel.app'
+const hashtag = 'BosoJowo'
 
 const tweet = () => {
     const encodeURI = tileToShare.replace(/\n/g, "%0A");
-    const shareToTwitter = `https://twitter.com/intent/tweet?text=${titleShare}%0A%0A${encodeURI}%0A%0A${urlToShare}`;
+    const shareToTwitter = `https://twitter.com/intent/tweet?text=${titleShare} %23${hashtag}%0A%0A${encodeURI}%0A%0A${urlToShare}`;
     window.open(shareToTwitter, "_blank");
 }
 const share = () => {
-  navigator.clipboard.writeText(titleShare + '\n\n' + tileToShare + '\n\n' + urlToShare).then(
+  navigator.clipboard.writeText(titleShare + ' #' + hashtag + '\n\n' + tileToShare + '\n\n' + urlToShare).then(
       () => {
         $visible = true
         message = 'Berhasil di-copy'
