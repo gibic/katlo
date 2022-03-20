@@ -390,18 +390,27 @@ const nextRow = () => {
 
 const modalClose = () => {
   showModal = false
+  definitionWord = false
 }
 const handleOverlay = () => {
   showOverlay = true
+  definitionWord = false
 }
 let handleWinModal = () => {
   winModal = true
   showModal = true
+  definitionWord = false
 }
 let handleWelcomeModal = () => {
   winModal = false
   showModal = true
   welcomeModal = true
+  definitionWord = false
+}
+
+let definitionWord = false
+const showDefinition = () => {
+  definitionWord = true
 }
 </script>
 
@@ -428,16 +437,36 @@ let handleWelcomeModal = () => {
 </main>
 <Modal {showModal} {stats} on:click={modalClose} on:share={share} on:tweet={tweet}>
   <div slot="head">
-    <Statistik {winModal} />
-  </div>
-  <div slot="body">
-    <Graph {winModal} {stats} distribution={stats.guesses} />
-    {#if !IN_PROGRESS}
+    {#if !definitionWord}
+      <Statistik {winModal} />
+      {#if !IN_PROGRESS}
       <div class="definition">
-        <p>{katlo(today)}</p>
-        <em>{definitions[katlo(today)]}</em>
+        <p><small>Kata hari ini</small><br>{katlo(today)}</p>
+        <button on:click="{() => showDefinition()}">[ Lihat arti kata ini ]</button>
       </div>
       {/if}
+      {:else}
+      <button class="back" on:click={() => definitionWord = false}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+        </svg>
+      </button>
+      <br><br>
+      <div class="definition">
+        <p><small>Kata hari ini</small><br>{katlo(today)}</p>
+      </div>
+      <div class="definition word">
+        <p>{definitions[katlo(today)]}
+        <br><br>
+        <span class="text-regular">(Makna kata didapat dari Kamus Bausastra Jawa, karangan W.J.S Poerwadarminta, terbitan tahun 1939)</span>
+        </p>
+      </div>
+    {/if}
+  </div>
+  <div slot="body">
+    {#if !definitionWord}
+    <Graph {winModal} {stats} distribution={stats.guesses} />
+    {/if}
   </div>
 </Modal>
 {#if welcomeModal && !winModal}
@@ -565,8 +594,12 @@ a {
 }
 
 .definition {
-  width: 80%;
+  width: 97%;
   margin: 1.5rem auto;
+  display: flex;
+  gap: .5rem;
+  align-items: flex-end;
+  transition: all cubic-bezier(0.075, 0.82, 0.165, 1) 100ms;
 }
 .definition p {
   font-weight: 700;
@@ -574,13 +607,43 @@ a {
   text-transform: capitalize;
 }
 
-.definition em {
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 1.25;
-  font-style: italic;
+.definition p small {
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: .1ch;
 }
 
+.definition.word > p {
+  font-weight: 400;
+  font-size: 12px;
+  text-align: left;
+}
+
+.definition button {
+  background-color: transparent;
+  border: none;
+  color: var(--green);
+  padding: .2rem 1rem;
+  cursor: pointer;
+}
+
+button.back {
+  background-color: transparent;
+  border: none;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  cursor: pointer;
+  color: var(--color-tone-1);
+}
+
+button.back svg,
+button.back path {
+  fill: var(--color-tone-1);
+}
+.text-regular {
+  text-transform: none;
+}
 @media screen and (max-width: 767px) {
   #game {
     max-width: 90vw;
